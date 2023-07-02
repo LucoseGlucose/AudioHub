@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<item
+        android:id="@+id/navigation_listen"
+        android:icon="@drawable/round_headphones_24"
+        android:title="Listen"/>
+
+    <item
+        android:id="@+id/navigation_songs"
+        android:icon="@drawable/round_music_note_24"
+        android:title="Songs"/>
+
+    <item
+        android:id="@+id/navigation_manage"
+        android:icon="@drawable/round_tune_24"
+        android:title="Manage"/>
+
+</menu>

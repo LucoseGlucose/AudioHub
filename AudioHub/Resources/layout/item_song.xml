@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imgThumbnail"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:contentDescription="Thumbnail"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="10dp"
+        android:scaleType="centerInside"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvTitle"
+        app:layout_constraintBottom_toBottomOf="@id/tvArtist"/>
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="10dp"
+        app:layout_constraintLeft_toRightOf="@id/imgThumbnail"
+        app:layout_constraintWidth_max="300dp"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvArtist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="10dp"
+        app:layout_constraintLeft_toRightOf="@id/imgThumbnail"
+        app:layout_constraintWidth_max="300dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"/>
+
+    <TextView
+        android:id="@+id/tvDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="10dp"
+        app:layout_constraintLeft_toRightOf="@id/tvTitle"
+        app:layout_constraintWidth_max="100dp"
+        app:layout_constraintBottom_toBottomOf="@id/tvTitle"
+        app:layout_constraintTop_toTopOf="@id/tvTitle"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/round_more_vert_24"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="10dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvTitle"
+        app:layout_constraintBottom_toBottomOf="@id/tvArtist"
+        app:fabCustomSize="50dp"/>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginVertical="10dp"
+        app:layout_constraintTop_toBottomOf="@id/imgThumbnail"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

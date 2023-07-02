@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioHub", "AudioHub\AudioHub.csproj", "{37EFF2DE-8361-49E0-ACD8-23F3BA98E295}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37EFF2DE-8361-49E0-ACD8-23F3BA98E295}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37EFF2DE-8361-49E0-ACD8-23F3BA98E295}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37EFF2DE-8361-49E0-ACD8-23F3BA98E295}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{37EFF2DE-8361-49E0-ACD8-23F3BA98E295}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37EFF2DE-8361-49E0-ACD8-23F3BA98E295}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37EFF2DE-8361-49E0-ACD8-23F3BA98E295}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E06C40C-5EE5-4D5D-9F4B-ECE699A7CAF2}
+	EndGlobalSection
+EndGlobal
