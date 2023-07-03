@@ -35,7 +35,7 @@ namespace AudioHub
 
             List<Playlist> playlists = new List<Playlist>() { new Playlist() { title = "Bangers",
                 songs = new LinkedList<Song>(new Song[] { new Song() { title = "Flex", artist = "Polo G ft. Juice Wrld",
-                id = 0, durationSecs = 164f, thumbnailPath = "storage/emulated/0/DCIM/Camera/IMG_20230618_200446_345.jpg" } }) } };
+                id = 0, durationSecs = 164 } }) } };
 
             RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvList);
             rv.SetAdapter(new ViewAdapter<Playlist>(playlists, Resource.Layout.item_playlist, BindPlaylistViewAdapter));
@@ -94,7 +94,7 @@ namespace AudioHub
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-            Drawable thumbnail = await Drawable.CreateFromPathAsync(song.thumbnailPath);
+            Drawable thumbnail = await Drawable.CreateFromPathAsync("");
 
             holder.ItemView.FindViewById<ImageView>(Resource.Id.imgThumbnail)
                 .SetImageDrawable(thumbnail);

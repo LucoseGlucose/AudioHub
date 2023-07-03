@@ -13,21 +13,18 @@ namespace AudioHub
 {
     public struct Song
     {
-        public ulong id;
+        public int id;
         public string title;
         public string artist;
-        public float durationSecs;
-        public string thumbnailPath;
+        public int durationSecs;
 
-        public Song(ulong id, string title, string artist, float durationSecs, string thumbnailPath)
+        public Song(int id, string title, string artist, int durationSecs)
         {
             this.id = id;
             this.title = title;
             this.artist = artist;
             this.durationSecs = durationSecs;
-            this.thumbnailPath = thumbnailPath;
         }
-
         public readonly string GetDurationString()
         {
             return $"{Math.Floor((decimal)(durationSecs / 60))}:{((durationSecs % 60) < 10 ? "0" : "")}{durationSecs % 60}";

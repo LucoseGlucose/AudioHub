@@ -14,6 +14,7 @@ using Google.Android.Material.FloatingActionButton;
 using Android.Graphics.Drawables;
 using System.Threading.Tasks;
 using AndroidX.ConstraintLayout.Widget;
+using YoutubeReExplode.Videos;
 
 namespace AudioHub
 {
@@ -27,13 +28,13 @@ namespace AudioHub
         {
             return inflater.Inflate(Resource.Layout.fragment_songs, container, false);
         }
-        public override void OnViewCreated(View view, Bundle savedInstanceState)
+        public override async void OnViewCreated(View view, Bundle savedInstanceState)
         {
             base.OnViewCreated(view, savedInstanceState);
 
             RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvList);
-            List<Song> songs = new List<Song>() { new Song() { title = "Flex", artist = "Polo G ft. Juice Wrld",
-                id = 0, durationSecs = 164f, thumbnailPath = "storage/emulated/0/DCIM/Camera/IMG_20230618_200446_345.jpg" } };
+            List<Song> songs = new List<Song>() {
+                await SongManager.DownloadSong(VideoId.Parse("https://www.youtube.com/watch?v=7aS7KStPgNA"), null, default) };
 
             rv.SetAdapter(new ViewAdapter<Song>(songs, Resource.Layout.item_song, BindSongViewAdapter));
             rv.SetLayoutManager(new LinearLayoutManager(view.Context));
@@ -44,7 +45,7 @@ namespace AudioHub
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-            Drawable thumbnail = await Drawable.CreateFromPathAsync(song.thumbnailPath);
+            Drawable thumbnail = await Drawable.CreateFromPathAsync($"{SongManager.SongDownloadDirectory}/{song.id}/Thumbnail.jpg");
 
             holder.ItemView.FindViewById<ImageView>(Resource.Id.imgThumbnail)
                 .SetImageDrawable(thumbnail);
