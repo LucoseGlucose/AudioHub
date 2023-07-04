@@ -33,7 +33,18 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="15dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnNewPlaylist"
         app:layout_constraintTop_toBottomOf="@id/tilSearchBar"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNewPlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:text="New Playlist"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:icon="@drawable/round_add_24"
+        app:iconGravity="textStart"
+        app:iconPadding="1dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -39,43 +39,13 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="View"
-        app:icon="@drawable/round_visibility_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnPlay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Play"
-        app:icon="@drawable/round_play_arrow_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRename"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Rename"
-        app:icon="@drawable/round_drive_file_rename_outline_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDelete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
         android:text="Delete"
         app:icon="@drawable/round_delete_24"
-        app:iconGravity="textStart"
+        app:iconGravity="start"
         app:iconPadding="1dp"/>
 
     <com.google.android.material.button.MaterialButton
@@ -85,7 +55,7 @@
         android:layout_margin="3dp"
         android:text="Cancel"
         app:icon="@drawable/round_close_24"
-        app:iconGravity="textStart"
+        app:iconGravity="start"
         app:iconPadding="1dp"/>
 
 </LinearLayout>

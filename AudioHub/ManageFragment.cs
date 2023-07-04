@@ -40,6 +40,8 @@ namespace AudioHub
             RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvList);
             rv.SetAdapter(new ViewAdapter<Playlist>(playlists, Resource.Layout.item_playlist, BindPlaylistViewAdapter));
             rv.SetLayoutManager(new LinearLayoutManager(view.Context));
+
+            view.FindViewById<Button>(Resource.Id.btnNewPlaylist).Click += (s, e) => ShowNewPlaylistDialog();
         }
         private static void BindPlaylistViewAdapter(RecyclerView.ViewHolder holder, Playlist playlist)
         {
@@ -52,41 +54,28 @@ namespace AudioHub
         }
         private static void ShowPlaylistDialog(Playlist playlist)
         {
-            Android.App.Dialog dialog = new Android.App.Dialog(MainActivity.activity, Resource.Style.AppTheme);
-            dialog.SetCancelable(true);
-            dialog.SetCanceledOnTouchOutside(true);
+            MainActivity.ShowDialog(Resource.Layout.dialog_playlists, (dialog, view) =>
+            {
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
+                view.FindViewById<TextView>(Resource.Id.tvCount).Text
+                    = $"{playlist.songs.Count} song{(playlist.songs.Count == 1 ? "" : "s")}";
 
-            View view = LayoutInflater.From(MainActivity.activity).Inflate(Resource.Layout.dialog_playlists, null);
-
-            view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
-            view.FindViewById<TextView>(Resource.Id.tvCount).Text
-                = $"{playlist.songs.Count} song{(playlist.songs.Count == 1 ? "" : "s")}";
-
-            view.FindViewById<Button>(Resource.Id.btnView).Click += (s, e) => ShowViewPlaylistDialog(playlist);
-            view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
-
-            dialog.Window.Attributes.WindowAnimations = Resource.Style.Base_Animation_AppCompat_Dialog;
-            dialog.SetContentView(view);
-            dialog.Create();
-            dialog.Show();
+                view.FindViewById<Button>(Resource.Id.btnView).Click += (s, e) => ShowViewPlaylistDialog(playlist);
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { ShowDeletePlaylistDialog(playlist); dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnRename).Click += (s, e) => { ShowRenamePlaylistDialog(playlist); };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+            });
         }
         private static void ShowViewPlaylistDialog(Playlist playlist)
         {
-            Android.App.Dialog dialog = new Android.App.Dialog(MainActivity.activity, Resource.Style.AppTheme);
-            dialog.SetCancelable(true);
-            dialog.SetCanceledOnTouchOutside(true);
+            MainActivity.ShowDialog(Resource.Layout.dialog_viewPlaylist, (dialog, view) =>
+            {
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
 
-            View view = LayoutInflater.From(MainActivity.activity).Inflate(Resource.Layout.dialog_viewPlaylist, null);
-            view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
-
-            RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvPlaylistList);
-            rv.SetAdapter(new ViewAdapter<Song>(playlist.songs, Resource.Layout.item_song, BindSongViewAdapter));
-            rv.SetLayoutManager(new LinearLayoutManager(view.Context));
-
-            dialog.Window.Attributes.WindowAnimations = Resource.Style.Base_Animation_AppCompat_Dialog;
-            dialog.SetContentView(view);
-            dialog.Create();
-            dialog.Show();
+                RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvPlaylistList);
+                rv.SetAdapter(new ViewAdapter<Song>(playlist.songs, Resource.Layout.item_song, BindSongViewAdapter));
+                rv.SetLayoutManager(new LinearLayoutManager(view.Context));
+            });
         }
         private static async void BindSongViewAdapter(RecyclerView.ViewHolder holder, Song song)
         {
@@ -94,7 +83,7 @@ namespace AudioHub
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-            Drawable thumbnail = await Drawable.CreateFromPathAsync("");
+            Drawable thumbnail = await Drawable.CreateFromPathAsync($"{SongManager.SongDownloadDirectory}/{song.id}/Thumbnail.jpg");
 
             holder.ItemView.FindViewById<ImageView>(Resource.Id.imgThumbnail)
                 .SetImageDrawable(thumbnail);
@@ -104,23 +93,61 @@ namespace AudioHub
         }
         private static void ShowSongDialog(Song song, Drawable thumbnail)
         {
-            Android.App.Dialog dialog = new Android.App.Dialog(MainActivity.activity, Resource.Style.AppTheme);
-            dialog.SetCancelable(true);
-            dialog.SetCanceledOnTouchOutside(true);
+            MainActivity.ShowDialog(Resource.Layout.dialog_manage_song, (dialog, view) =>
+            {
+                view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
+                view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
+                view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-            View view = LayoutInflater.From(MainActivity.activity).Inflate(Resource.Layout.dialog_manage_song, null);
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { ShowDeleteSongDialog(song, thumbnail); dialog.Dismiss(); };
+            });
+        }
+        private static void ShowDeleteSongDialog(Song song, Drawable thumbnail)
+        {
+            MainActivity.ShowDialog(Resource.Layout.dialog_manage_song, (dialog, view) =>
+            {
+                view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
+                view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
+                view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-            view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
-            view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
-            view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
-            view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { ShowSongDialog(song, thumbnail); dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { SongManager.DeleteSong(song); dialog.Dismiss(); };
+            });
+        }
+        private static void ShowDeletePlaylistDialog(Playlist playlist)
+        {
+            MainActivity.ShowDialog(Resource.Layout.dialog_deletePlaylist, (dialog, view) =>
+            {
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
+                view.FindViewById<TextView>(Resource.Id.tvCount).Text
+                    = $"{playlist.songs.Count} song{(playlist.songs.Count == 1 ? "" : "s")}";
 
-            view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { ShowPlaylistDialog(playlist); dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { dialog.Dismiss(); };
+            });
+        }
+        private static void ShowNewPlaylistDialog()
+        {
+            MainActivity.ShowDialog(Resource.Layout.dialog_newPlaylist, (dialog, view) =>
+            {
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnCreate).Click += (s, e) => { dialog.Dismiss(); };
+            });
+        }
+        private static void ShowRenamePlaylistDialog(Playlist playlist)
+        {
+            MainActivity.ShowDialog(Resource.Layout.dialog_playlists, (dialog, view) =>
+            {
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
+                view.FindViewById<TextView>(Resource.Id.tvCount).Text
+                    = $"{playlist.songs.Count} song{(playlist.songs.Count == 1 ? "" : "s")}";
 
-            dialog.Window.Attributes.WindowAnimations = Resource.Style.Base_Animation_AppCompat_Dialog;
-            dialog.SetContentView(view);
-            dialog.Create();
-            dialog.Show();
+                view.FindViewById<Button>(Resource.Id.btnRename).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+            });
         }
     }
 }

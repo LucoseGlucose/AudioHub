@@ -55,23 +55,15 @@ namespace AudioHub
         }
         private static void ShowSongDialog(Song song, Drawable thumbnail)
         {
-            Android.App.Dialog dialog = new Android.App.Dialog(MainActivity.activity, Resource.Style.AppTheme);
-            dialog.SetCancelable(true);
-            dialog.SetCanceledOnTouchOutside(true);
+            MainActivity.ShowDialog(Resource.Layout.dialog_songs_song, (dialog, view) =>
+            {
+                view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
+                view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
+                view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-            View view = LayoutInflater.From(MainActivity.activity).Inflate(Resource.Layout.dialog_songs_song, null);
-
-            view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
-            view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
-            view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
-            view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
-
-            view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
-
-            dialog.Window.Attributes.WindowAnimations = Resource.Style.Base_Animation_AppCompat_Dialog;
-            dialog.SetContentView(view);
-            dialog.Create();
-            dialog.Show();
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+            });
         }
     }
 }

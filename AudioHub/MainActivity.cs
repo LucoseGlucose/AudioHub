@@ -17,6 +17,7 @@ using Android;
 using AndroidX.Activity;
 using Android.Bluetooth;
 using YoutubeReExplode.Videos;
+using YoutubeReExplode.Playlists;
 
 namespace AudioHub
 {
@@ -70,6 +71,20 @@ namespace AudioHub
             ft.Commit();
 
             currentPage = newPage;
+        }
+        public static void ShowDialog(int layoutResID, System.Action<Dialog, View> bindViewAction)
+        {
+            Dialog dialog = new Dialog(activity, Resource.Style.AppTheme);
+            dialog.SetCancelable(true);
+            dialog.SetCanceledOnTouchOutside(true);
+
+            View view = LayoutInflater.From(activity).Inflate(layoutResID, null);
+            bindViewAction(dialog, view);
+
+            dialog.Window.Attributes.WindowAnimations = Resource.Style.Base_Animation_AppCompat_Dialog;
+            dialog.SetContentView(view);
+            dialog.Create();
+            dialog.Show();
         }
     }
 }

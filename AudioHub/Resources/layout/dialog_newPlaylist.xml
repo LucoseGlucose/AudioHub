@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <com.google.android.material.textfield.TextInputLayout
         style="?attr/textInputOutlinedDenseStyle"
-        android:id="@+id/tilSearchBar"
+        android:id="@+id/tilPlaylistName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
-        android:hint="Search"
+        android:hint="Playlist Name"
         app:layout_constraintTop_toTopOf="parent"
         app:endIconMode="clear_text"
-        app:startIconDrawable="@drawable/round_search_24">
+        app:startIconDrawable="@drawable/round_drive_file_rename_outline_24">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etSearchBar"
+            android:id="@+id/etPlaylistName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
@@ -26,23 +27,24 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvPlaylistList"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCreate"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="20dp"
-        app:layout_constraintBottom_toTopOf="@id/btnCancel"
-        app:layout_constraintTop_toBottomOf="@id/tilSearchBar"/>
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:text="Create Playlist"
+        app:icon="@drawable/round_playlist_add_24"
+        app:iconGravity="textStart"
+        app:iconPadding="1dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="3dp"
         android:text="Cancel"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:icon="@drawable/round_close_24"
         app:iconGravity="textStart"
         app:iconPadding="1dp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

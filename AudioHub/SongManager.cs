@@ -26,7 +26,7 @@ namespace AudioHub
     public static class SongManager
     {
         private static readonly Lazy<YoutubeClient> ytClient = new Lazy<YoutubeClient>();
-        public static string SongDownloadDirectory => MainActivity.activity.GetExternalFilesDir(null).AbsolutePath;
+        public static string SongDownloadDirectory => $"{MainActivity.activity.GetExternalFilesDir(null).AbsolutePath}/Songs";
 
         public static Song GetSongFromVideo(Video video)
         {
