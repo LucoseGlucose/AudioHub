@@ -16,6 +16,7 @@ using Android.Graphics.Drawables;
 using YoutubeReExplode.Playlists;
 using static Android.Provider.MediaStore.Audio;
 using AndroidX.ConstraintLayout.Widget;
+using Java.Lang;
 
 namespace AudioHub
 {
@@ -33,9 +34,7 @@ namespace AudioHub
         {
             base.OnViewCreated(view, savedInstanceState);
 
-            List<Playlist> playlists = new List<Playlist>() { new Playlist() { title = "Bangers",
-                songs = new LinkedList<Song>(new Song[] { new Song() { title = "Flex", artist = "Polo G ft. Juice Wrld",
-                id = 0, durationSecs = 164 } }) } };
+            List<Playlist> playlists = new List<Playlist>() {  };
 
             RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvList);
             rv.SetAdapter(new ViewAdapter<Playlist>(playlists, Resource.Layout.item_playlist, BindPlaylistViewAdapter));
@@ -45,7 +44,7 @@ namespace AudioHub
         }
         private static void BindPlaylistViewAdapter(RecyclerView.ViewHolder holder, Playlist playlist)
         {
-            string songCount = playlist.songs.Count == 1 ? "1 Song" : $"{playlist.songs.Count} Songs";
+            string songCount = playlist.songs.Length == 1 ? "1 Song" : $"{playlist.songs.Length} Songs";
 
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvCount).Text = songCount;
@@ -58,10 +57,10 @@ namespace AudioHub
             {
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
                 view.FindViewById<TextView>(Resource.Id.tvCount).Text
-                    = $"{playlist.songs.Count} song{(playlist.songs.Count == 1 ? "" : "s")}";
+                    = $"{playlist.songs.Length} song{(playlist.songs.Length == 1 ? "" : "s")}";
 
                 view.FindViewById<Button>(Resource.Id.btnView).Click += (s, e) => ShowViewPlaylistDialog(playlist);
-                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { ShowDeletePlaylistDialog(playlist); dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { ShowDeletePlaylistDialog(playlist, dialog); };
                 view.FindViewById<Button>(Resource.Id.btnRename).Click += (s, e) => { ShowRenamePlaylistDialog(playlist); };
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
             });
@@ -73,7 +72,9 @@ namespace AudioHub
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
 
                 RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvPlaylistList);
-                rv.SetAdapter(new ViewAdapter<Song>(playlist.songs, Resource.Layout.item_song, BindSongViewAdapter));
+                rv.SetAdapter(new ViewAdapter<Song>(PlaylistManager.GetSongsInPlaylist(playlist),
+                    Resource.Layout.item_song, BindSongViewAdapter));
+
                 rv.SetLayoutManager(new LinearLayoutManager(view.Context));
             });
         }
@@ -101,32 +102,42 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
-                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { ShowDeleteSongDialog(song, thumbnail); dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { ShowDeleteSongDialog(song, thumbnail, dialog); };
             });
         }
-        private static void ShowDeleteSongDialog(Song song, Drawable thumbnail)
+        private static void ShowDeleteSongDialog(Song song, Drawable thumbnail, Android.App.Dialog prevDialog)
         {
-            MainActivity.ShowDialog(Resource.Layout.dialog_manage_song, (dialog, view) =>
+            MainActivity.ShowDialog(Resource.Layout.dialog_deleteSong, (dialog, view) =>
             {
                 view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
                 view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
                 view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { ShowSongDialog(song, thumbnail); dialog.Dismiss(); };
-                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { SongManager.DeleteSong(song); dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) =>
+                {
+                    prevDialog.Dismiss();
+                    dialog.Dismiss();
+                    MainActivity.ShowToast($"Song {song.title} successfully deleted");
+                };
             });
         }
-        private static void ShowDeletePlaylistDialog(Playlist playlist)
+        private static void ShowDeletePlaylistDialog(Playlist playlist, Android.App.Dialog prevDialog)
         {
             MainActivity.ShowDialog(Resource.Layout.dialog_deletePlaylist, (dialog, view) =>
             {
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
                 view.FindViewById<TextView>(Resource.Id.tvCount).Text
-                    = $"{playlist.songs.Count} song{(playlist.songs.Count == 1 ? "" : "s")}";
+                    = $"{playlist.songs.Length} song{(playlist.songs.Length == 1 ? "" : "s")}";
 
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { ShowPlaylistDialog(playlist); dialog.Dismiss(); };
-                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) =>
+                {
+                    prevDialog.Dismiss();
+                    dialog.Dismiss();
+                    MainActivity.ShowToast($"Playlist {playlist.title} successfully deleted");
+                };
             });
         }
         private static void ShowNewPlaylistDialog()
@@ -134,16 +145,28 @@ namespace AudioHub
             MainActivity.ShowDialog(Resource.Layout.dialog_newPlaylist, (dialog, view) =>
             {
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };
-                view.FindViewById<Button>(Resource.Id.btnCreate).Click += (s, e) => { dialog.Dismiss(); };
+                view.FindViewById<Button>(Resource.Id.btnCreate).Click += (s, e) =>
+                {
+                    string title = view.FindViewById<EditText>(Resource.Id.etPlaylistName).Text;
+
+                    if (string.IsNullOrEmpty(title)) MainActivity.ShowToast("Could not create playlist please enter a name");
+                    //TODO make sure playlist doesn't exist yet
+                    else
+                    {
+                        MainActivity.ShowToast($"Playlist {title} created successfully");
+                    }
+
+                    dialog.Dismiss();
+                };
             });
         }
         private static void ShowRenamePlaylistDialog(Playlist playlist)
         {
-            MainActivity.ShowDialog(Resource.Layout.dialog_playlists, (dialog, view) =>
+            MainActivity.ShowDialog(Resource.Layout.dialog_renamePlaylist, (dialog, view) =>
             {
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
                 view.FindViewById<TextView>(Resource.Id.tvCount).Text
-                    = $"{playlist.songs.Count} song{(playlist.songs.Count == 1 ? "" : "s")}";
+                    = $"{playlist.songs.Length} song{(playlist.songs.Length == 1 ? "" : "s")}";
 
                 view.FindViewById<Button>(Resource.Id.btnRename).Click += (s, e) => { dialog.Dismiss(); };
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); };

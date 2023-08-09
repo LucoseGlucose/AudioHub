@@ -32,7 +32,7 @@ namespace AudioHub
             }
         }
 
-        private readonly IEnumerable<T> items;
+        public IEnumerable<T> items;
         private readonly Action<RecyclerView.ViewHolder, T> bindAction;
         private readonly int layoutResID;
 

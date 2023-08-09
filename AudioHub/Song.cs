@@ -8,17 +8,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using YoutubeReExplode.Videos;
 
 namespace AudioHub
 {
     public struct Song
     {
-        public int id;
+        public string id;
         public string title;
         public string artist;
         public int durationSecs;
 
-        public Song(int id, string title, string artist, int durationSecs)
+        public Song(string id, string title, string artist, int durationSecs)
         {
             this.id = id;
             this.title = title;

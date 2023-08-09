@@ -6,6 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/lpiProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <Button
         android:id="@+id/btnGo"
         android:layout_width="0dp"
@@ -35,7 +41,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
-            android:inputType="text"/>
+            android:inputType="text"
+            android:imeOptions="actionDone"
+            android:imeActionLabel="Search"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

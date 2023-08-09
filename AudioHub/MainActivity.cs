@@ -51,6 +51,8 @@ namespace AudioHub
 
             await Permissions.RequestAsync<Permissions.StorageRead>();
             await Permissions.RequestAsync<Permissions.StorageWrite>();
+
+            SongManager.ClearCachedThumbnails();
         }
         private void BNavView_ItemSelected(object sender, NavigationBarView.ItemSelectedEventArgs e)
         {
@@ -85,6 +87,10 @@ namespace AudioHub
             dialog.SetContentView(view);
             dialog.Create();
             dialog.Show();
+        }
+        public static void ShowToast(string message, ToastLength length = ToastLength.Long)
+        {
+            Toast.MakeText(activity, message, length);
         }
     }
 }

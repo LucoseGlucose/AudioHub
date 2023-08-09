@@ -11,16 +11,12 @@ using System.Text;
 
 namespace AudioHub
 {
-    public class Playlist
+    public struct Playlist
     {
         public string title;
-        public LinkedList<Song> songs = new LinkedList<Song>();
+        public string[] songs;
 
-        public Playlist()
-        {
-
-        }
-        public Playlist(string title, LinkedList<Song> songs)
+        public Playlist(string title, string[] songs)
         {
             this.title = title;
             this.songs = songs;

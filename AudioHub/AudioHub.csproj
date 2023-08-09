@@ -60,8 +60,10 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OnEditorActionListener.cs" />
     <Compile Include="OnClickListener.cs" />
     <Compile Include="Playlist.cs" />
+    <Compile Include="PlaylistManager.cs" />
     <Compile Include="SongManager.cs" />
     <Compile Include="AudioMaster.cs" />
     <Compile Include="ListenFragment.cs" />
