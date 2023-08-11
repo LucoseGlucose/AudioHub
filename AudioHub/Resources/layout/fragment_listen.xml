@@ -6,6 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/lpiProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/babTopAppBar"
         android:layout_width="match_parent"

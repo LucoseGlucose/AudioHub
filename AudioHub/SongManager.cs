@@ -61,8 +61,7 @@ namespace AudioHub
                     if (!(result is VideoSearchResult video)) continue;
                     Song song = GetSongFromVideo(video);
 
-                    CacheThumbnail(video, song);
-                    songs.Add(song);
+                    if (CacheThumbnail(video, song)) songs.Add(song);
                 }
                 break;
             }
@@ -80,10 +79,9 @@ namespace AudioHub
         }
         public static async Task<Song> DownloadSong(string videoId, Progress<double> progress, CancellationToken cancellationToken)
         {
-
             Video video = await ytClient.Value.Videos.GetAsync(VideoId.Parse(videoId), cancellationToken);
             Song song = GetSongFromVideo(video);
-            string directory = GetSongDirectory(song);
+            string directory = GetSongDirectory(song.id);
 
             if (Directory.Exists(directory)) return song;
 
@@ -104,18 +102,18 @@ namespace AudioHub
 
             return song;
         }
-        public static string GetSongDirectory(Song song)
+        public static string GetSongDirectory(string id)
         {
-            return $"{SongDownloadDirectory}/{song.id}";
+            return $"{SongDownloadDirectory}/{id}";
         }
         public static void DownloadThumbnail(Video video, Song song)
         {
             Thumbnail thumbnail = video.Thumbnails.Where(t => t.Url.Contains("maxresdefault.jpg")).FirstOrDefault()
                 ?? video.Thumbnails.GetWithHighestResolution();
             System.Net.WebClient client = new System.Net.WebClient();
-            client.DownloadFile(new Uri(thumbnail.Url), $"{GetSongDirectory(song)}/Thumbnail.jpg");
+            client.DownloadFile(new Uri(thumbnail.Url), $"{GetSongDirectory(song.id)}/Thumbnail.jpg");
         }
-        public static void CacheThumbnail(VideoSearchResult video, Song song)
+        public static bool CacheThumbnail(VideoSearchResult video, Song song)
         {
             if (!Directory.Exists(ThumbnailCacheDirectory)) Directory.CreateDirectory(ThumbnailCacheDirectory);
 
@@ -128,13 +126,20 @@ namespace AudioHub
             }
             catch
             {
-
+                return false;
             }
+
+            return true;
         }
-        public static void DeleteSong(VideoId id)
+        public static void DeleteSong(string id)
         {
             string directory = $"{SongDownloadDirectory}/{id}";
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
+
+            foreach (string playlist in PlaylistManager.GetPlaylistNames())
+            {
+                PlaylistManager.RemoveSongFromPlaylist(playlist, id);
+            }
         }
         public static Song GetSongById(string id)
         {
@@ -142,6 +147,10 @@ namespace AudioHub
 
             XmlSerializer serializer = new XmlSerializer(typeof(Song));
             return (Song)serializer.Deserialize(reader);
+        }
+        public static bool IsSongDownloaded(string id)
+        {
+            return Directory.Exists(GetSongDirectory(id));
         }
     }
 }

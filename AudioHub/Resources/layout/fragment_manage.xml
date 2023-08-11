@@ -6,6 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/lpiProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <com.google.android.material.textfield.TextInputLayout
         style="?attr/textInputOutlinedDenseStyle"
         android:id="@+id/tilSearchBar"
@@ -28,13 +34,27 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <include
+        layout="@layout/item_playlist"
+        android:id="@+id/iDownloadedPlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        app:layout_constraintTop_toBottomOf="@id/tilSearchBar"/>
+
+    <include
+        layout="@layout/item_playlist"
+        android:id="@+id/iQueuePlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/iDownloadedPlaylist"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="15dp"
         app:layout_constraintBottom_toTopOf="@id/btnNewPlaylist"
-        app:layout_constraintTop_toBottomOf="@id/tilSearchBar"/>
+        app:layout_constraintTop_toBottomOf="@id/iQueuePlaylist"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNewPlaylist"

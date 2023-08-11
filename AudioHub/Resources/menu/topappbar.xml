@@ -2,13 +2,6 @@
 <menu
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto">
-	
-	<item
-        android:id="@+id/topappbar_download"
-        android:icon="@drawable/round_download_24"
-        android:title="Download"
-        android:contentDescription="Download"
-        app:showAsAction="never"/>
 
 	<item
         android:id="@+id/topappbar_addToPlaylist"

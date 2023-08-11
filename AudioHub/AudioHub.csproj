@@ -64,6 +64,7 @@
     <Compile Include="OnClickListener.cs" />
     <Compile Include="Playlist.cs" />
     <Compile Include="PlaylistManager.cs" />
+    <Compile Include="QueueManager.cs" />
     <Compile Include="SongManager.cs" />
     <Compile Include="AudioMaster.cs" />
     <Compile Include="ListenFragment.cs" />

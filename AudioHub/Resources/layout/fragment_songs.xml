@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:inputType="text"
-            android:imeOptions="actionDone"
+            android:imeOptions="actionGo"
             android:imeActionLabel="Search"/>
 
     </com.google.android.material.textfield.TextInputLayout>

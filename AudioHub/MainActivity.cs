@@ -88,10 +88,6 @@ namespace AudioHub
             dialog.Create();
             dialog.Show();
         }
-        public static void ShowToast(string message, ToastLength length = ToastLength.Long)
-        {
-            Toast.MakeText(activity, message, length);
-        }
     }
 }
 

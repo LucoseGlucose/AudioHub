@@ -49,16 +49,6 @@
         app:iconPadding="1dp"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnPlay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Play"
-        app:icon="@drawable/round_play_arrow_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnRename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

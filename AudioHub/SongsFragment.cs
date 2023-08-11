@@ -21,8 +21,8 @@ namespace AudioHub
 {
     public class SongsFragment : Fragment
     {
-        ProgressBar progressBar;
-        Progress<double> downloadProgress;
+        private ProgressBar progressBar;
+        private Progress<double> downloadProgress;
 
         public override void OnCreate(Bundle savedInstanceState)
         {
@@ -44,7 +44,7 @@ namespace AudioHub
 
             view.FindViewById<EditText>(Resource.Id.etSearchBar).SetOnEditorActionListener(new OnEditorActionListener((tv, aID, e) =>
             {
-                if (aID != ImeAction.Done) return false;
+                if (aID != ImeAction.Go) return false;
 
                 SearchQuery(tv.Text, view, viewAdapter);
                 return true;
@@ -52,17 +52,6 @@ namespace AudioHub
 
             view.FindViewById<Button>(Resource.Id.btnGo).Click += (s, e) => 
                 SearchQuery(view.FindViewById<EditText>(Resource.Id.etSearchBar).Text, view, viewAdapter);
-        }
-        private async void SearchQuery(string query, View view, ViewAdapter<Song> viewAdapter)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                MainActivity.ShowToast("Please enter a search query or video url");
-                return;
-            }
-
-            InputMethodManager imm = (InputMethodManager)view.Context.GetSystemService(Context.InputMethodService);
-            imm.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
 
             progressBar = view.FindViewById<ProgressBar>(Resource.Id.lpiProgress);
             progressBar.Min = 0;
@@ -73,11 +62,18 @@ namespace AudioHub
 
             downloadProgress = new Progress<double>(progress =>
                 progressBar.SetProgress((int)Math.Round(progress * 100), true));
+        }
+        private async void SearchQuery(string query, View view, ViewAdapter<Song> viewAdapter)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+
+            InputMethodManager imm = (InputMethodManager)view.Context.GetSystemService(Context.InputMethodService);
+            imm.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
 
             if (VideoId.TryParse(query).HasValue)
             {
                 await SongManager.DownloadSong(VideoId.Parse(query), downloadProgress, default);
-                progressBar.SetProgress(100, true);
+                progressBar.SetProgress(0, true);
             }
             else
             {
@@ -87,7 +83,6 @@ namespace AudioHub
                 progressBar.Indeterminate = false;
                 progressBar.SetProgress(0, true);
 
-                MainActivity.ShowToast("Results found");
                 viewAdapter.NotifyDataSetChanged();
             }
         }
@@ -114,17 +109,21 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
                 view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-                view.FindViewById<Button>(Resource.Id.btnDownload).Click += async (s, e) =>
+                Button btnDownload = view.FindViewById<Button>(Resource.Id.btnDownload);
+                if (!SongManager.IsSongDownloaded(song.id))
                 {
-                    dialog.Dismiss();
+                    btnDownload.Click += async (s, e) =>
+                    {
+                        dialog.Dismiss();
 
-                    progressBar.Indeterminate = false;
-                    progressBar.SetProgress(0, true);
+                        progressBar.Indeterminate = false;
+                        progressBar.SetProgress(0, true);
 
-                    await SongManager.DownloadSong(song.id, downloadProgress, default);
-                    progressBar.SetProgress(0, true);
-                    MainActivity.ShowToast($"Song {song.title} successfully downloaded");
-                };
+                        await SongManager.DownloadSong(song.id, downloadProgress, default);
+                        progressBar.SetProgress(0, true);
+                    };
+                }
+                else btnDownload.Visibility = ViewStates.Gone;
 
                 view.FindViewById<Button>(Resource.Id.btnAddToPlaylist).Click += (s, e) =>
                 {
