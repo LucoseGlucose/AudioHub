@@ -16,13 +16,16 @@ namespace AudioHub
 {
     public class ListenFragment : Fragment
     {
-        FloatingActionButton fabPlayPause;
-        FloatingActionButton fabPrev;
-        FloatingActionButton fabNext;
-        FloatingActionButton fabLoop;
-        FloatingActionButton fabShuffle;
+        private FloatingActionButton fabPlayPause;
+        private FloatingActionButton fabPrev;
+        private FloatingActionButton fabNext;
+        private FloatingActionButton fabLoop;
+        private FloatingActionButton fabShuffle;
 
-        BottomAppBar babTopAppBar;
+        private BottomAppBar babTopAppBar;
+
+        private ProgressBar progressBar;
+        private Progress<double> downloadProgress;
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -43,6 +46,10 @@ namespace AudioHub
             {
                 MainActivity.activity.FinishAndRemoveTask();
             }));
+
+            progressBar = view.FindViewById<ProgressBar>(Resource.Id.lpiProgress);
+            downloadProgress = new Progress<double>(progress =>
+                progressBar.SetProgress((int)Math.Round(progress * 100), true));
         }
     }
 }

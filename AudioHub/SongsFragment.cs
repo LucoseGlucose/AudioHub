@@ -54,12 +54,6 @@ namespace AudioHub
                 SearchQuery(view.FindViewById<EditText>(Resource.Id.etSearchBar).Text, view, viewAdapter);
 
             progressBar = view.FindViewById<ProgressBar>(Resource.Id.lpiProgress);
-            progressBar.Min = 0;
-            progressBar.Max = 100;
-
-            progressBar.Indeterminate = false;
-            progressBar.SetProgress(0, true);
-
             downloadProgress = new Progress<double>(progress =>
                 progressBar.SetProgress((int)Math.Round(progress * 100), true));
         }
@@ -73,7 +67,7 @@ namespace AudioHub
             if (VideoId.TryParse(query).HasValue)
             {
                 await SongManager.DownloadSong(VideoId.Parse(query), downloadProgress, default);
-                progressBar.SetProgress(0, true);
+                progressBar.SetProgress(100, true);
             }
             else
             {
@@ -81,7 +75,7 @@ namespace AudioHub
                 viewAdapter.items = await SongManager.SearchForSongs(query, default);
 
                 progressBar.Indeterminate = false;
-                progressBar.SetProgress(0, true);
+                progressBar.SetProgress(100, true);
 
                 viewAdapter.NotifyDataSetChanged();
             }
@@ -128,6 +122,15 @@ namespace AudioHub
                 view.FindViewById<Button>(Resource.Id.btnAddToPlaylist).Click += (s, e) =>
                 {
 
+                };
+
+                view.FindViewById<Button>(Resource.Id.btnPlay).Click += async (s, e) =>
+                {
+                    if (!SongManager.IsSongDownloaded(song.id))
+                    {
+                        await SongManager.CacheSong(song.id, downloadProgress, default);
+                        progressBar.SetProgress(0, true);
+                    }
                 };
 
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();

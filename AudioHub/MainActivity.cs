@@ -53,6 +53,14 @@ namespace AudioHub
             await Permissions.RequestAsync<Permissions.StorageWrite>();
 
             SongManager.ClearCachedThumbnails();
+            SongManager.ClearCachedSongs();
+        }
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+
+            SongManager.ClearCachedThumbnails();
+            SongManager.ClearCachedSongs();
         }
         private void BNavView_ItemSelected(object sender, NavigationBarView.ItemSelectedEventArgs e)
         {

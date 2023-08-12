@@ -17,6 +17,8 @@ namespace AudioHub
     public static class PlaylistManager
     {
         public static string PlaylistDirectory => $"{MainActivity.activity.GetExternalFilesDir(null).AbsolutePath}/Playlists";
+        public const string downloadedPlaylistName = "Downloaded";
+        public const string queuePlaylistName = "Queue";
 
         public static string[] GetPlaylistNames()
         {
@@ -60,14 +62,34 @@ namespace AudioHub
         }
         public static string[] GetSongIDsInPlaylist(string title)
         {
+            if (title == downloadedPlaylistName) return GetDownloadedSongsPlaylist().songs;
+            if (title == queuePlaylistName)
+            {
+                string[] ids = new string[QueueManager.songs.Count];
+                int i = 0;
+
+                foreach (Song song in QueueManager.songs)
+                {
+                    ids[i] = song.id;
+                    i++;
+                }
+
+                return ids;
+            }
+
             return Directory.GetFiles($"{PlaylistDirectory}/{title}");
         }
-        public static Song[] GetSongsInPlaylist(Playlist playlist)
+        public static Song[] GetSongsInPlaylist(string title)
         {
-            Song[] songs = new Song[playlist.songs.Length];
+            if (title == downloadedPlaylistName) return SongManager.GetSongsFromIDs(GetDownloadedSongsPlaylist().songs);
+            if (title == queuePlaylistName) return QueueManager.songs.ToArray();
+
+            string[] songIDs = GetSongIDsInPlaylist(title);
+            Song[] songs = new Song[songIDs.Length];
+
             for (int i = 0; i < songs.Length; i++)
             {
-                songs[i] = SongManager.GetSongById(playlist.songs[i]);
+                songs[i] = SongManager.GetSongById(songIDs[i]);
             }
             return songs;
         }
@@ -90,7 +112,7 @@ namespace AudioHub
                 songPaths[i] = info.Name;
             }
 
-            return new Playlist("Downloaded", songPaths);
+            return new Playlist(downloadedPlaylistName, songPaths);
         }
     }
 }

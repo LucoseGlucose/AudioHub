@@ -66,75 +66,9 @@
             app:layout_constraintTop_toBottomOf="@id/tvTitle"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnPlay"
+    
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Play"
-        app:icon="@drawable/round_play_arrow_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAddToQueue"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Add To Queue"
-        app:icon="@drawable/round_queue_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRemoveFromQueue"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Remove From Queue"
-        app:icon="@drawable/round_delete_sweep_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnDownload"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Download"
-        app:icon="@drawable/round_download_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAddToPlaylist"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Add To Playlist"
-        app:icon="@drawable/round_playlist_add_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnDelete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Delete"
-        app:icon="@drawable/round_delete_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCancel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:text="Cancel"
-        app:icon="@drawable/round_close_24"
-        app:iconGravity="textStart"
-        app:iconPadding="1dp"/>
+        android:layout_height="0dp"/>
 
 </LinearLayout>

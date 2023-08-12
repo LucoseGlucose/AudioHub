@@ -16,9 +16,18 @@ namespace AudioHub
 {
     public static class QueueManager
     {
-        public static void AddSongToQueue(Song song)
-        {
+        public static readonly LinkedList<Song> songs = new LinkedList<Song>();
 
+        public static bool IsEmpty() => songs.Count == 0;
+        public static Song GetNextSong()
+        {
+            Song song = songs.First.Value;
+            songs.RemoveFirst();
+            return song;
+        }
+        public static Playlist GetQueuePlaylist()
+        {
+            return new Playlist(PlaylistManager.queuePlaylistName, PlaylistManager.GetSongIDsInPlaylist(PlaylistManager.queuePlaylistName));
         }
     }
 }

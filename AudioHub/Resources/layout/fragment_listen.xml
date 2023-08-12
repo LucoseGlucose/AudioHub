@@ -10,6 +10,9 @@
         android:id="@+id/lpiProgress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:min="0"
+        android:max="100"
+        android:progress="100"
         app:layout_constraintTop_toTopOf="parent"/>
 
     <com.google.android.material.bottomappbar.BottomAppBar
@@ -17,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:menu="@menu/topappbar"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lpiProgress"
         app:menuAlignmentMode="auto"
         app:navigationIcon="@drawable/round_close_24"/>
 

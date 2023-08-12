@@ -28,7 +28,8 @@ namespace AudioHub
         private static readonly Lazy<YoutubeClient> ytClient = new Lazy<YoutubeClient>();
         private static readonly Lazy<System.Net.WebClient> webClient = new Lazy<System.Net.WebClient>();
         public static string SongDownloadDirectory => $"{MainActivity.activity.GetExternalFilesDir(null).AbsolutePath}/Songs";
-        public static string ThumbnailCacheDirectory => $"{MainActivity.activity.GetExternalFilesDir(null).AbsolutePath}/Cached Thumbnails";
+        public static string ThumbnailCacheDirectory => $"{MainActivity.activity.GetExternalCacheDirs().First().AbsolutePath}/Thumbnails";
+        public static string SongCacheDirectory => $"{MainActivity.activity.GetExternalCacheDirs().First().AbsolutePath}/Songs";
         private static string lastSearchQuery;
 
         public static Song GetSongFromVideo(Video video)
@@ -77,6 +78,15 @@ namespace AudioHub
                 File.Delete(file);
             }
         }
+        public static void ClearCachedSongs()
+        {
+            if (!Directory.Exists(SongCacheDirectory)) Directory.CreateDirectory(SongCacheDirectory);
+
+            foreach (string file in Directory.EnumerateFiles(SongCacheDirectory))
+            {
+                File.Delete(file);
+            }
+        }
         public static async Task<Song> DownloadSong(string videoId, Progress<double> progress, CancellationToken cancellationToken)
         {
             Video video = await ytClient.Value.Videos.GetAsync(VideoId.Parse(videoId), cancellationToken);
@@ -84,15 +94,13 @@ namespace AudioHub
             string directory = GetSongDirectory(song.id);
 
             if (Directory.Exists(directory)) return song;
-
-            DeleteSong(song.id);
             Directory.CreateDirectory(directory);
 
             StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
             IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
             await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
-            DownloadThumbnail(video, song);
+            DownloadThumbnail(video, directory);
 
             XmlWriter writer = XmlWriter.Create($"{directory}/SongData.xml", new XmlWriterSettings() {
                 WriteEndDocumentOnClose = true, CloseOutput = true, Indent = true });
@@ -106,12 +114,12 @@ namespace AudioHub
         {
             return $"{SongDownloadDirectory}/{id}";
         }
-        public static void DownloadThumbnail(Video video, Song song)
+        public static void DownloadThumbnail(Video video, string directory)
         {
             Thumbnail thumbnail = video.Thumbnails.Where(t => t.Url.Contains("maxresdefault.jpg")).FirstOrDefault()
                 ?? video.Thumbnails.GetWithHighestResolution();
             System.Net.WebClient client = new System.Net.WebClient();
-            client.DownloadFile(new Uri(thumbnail.Url), $"{GetSongDirectory(song.id)}/Thumbnail.jpg");
+            client.DownloadFile(new Uri(thumbnail.Url), $"{directory}/Thumbnail.jpg");
         }
         public static bool CacheThumbnail(VideoSearchResult video, Song song)
         {
@@ -130,6 +138,33 @@ namespace AudioHub
             }
 
             return true;
+        }
+        public static async Task<Song> CacheSong(string videoId, Progress<double> progress, CancellationToken cancellationToken)
+        {
+            Video video = await ytClient.Value.Videos.GetAsync(VideoId.Parse(videoId), cancellationToken);
+            Song song = GetSongFromVideo(video);
+            string directory = $"{SongCacheDirectory}/{song.id}";
+
+            if (Directory.Exists(directory)) return song;
+            Directory.CreateDirectory(directory);
+
+            StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
+            IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+            await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
+            DownloadThumbnail(video, directory);
+
+            XmlWriter writer = XmlWriter.Create($"{directory}/SongData.xml", new XmlWriterSettings()
+            {
+                WriteEndDocumentOnClose = true,
+                CloseOutput = true,
+                Indent = true
+            });
+
+            XmlSerializer serializer = new XmlSerializer(typeof(Song));
+            serializer.Serialize(writer, song);
+
+            return song;
         }
         public static void DeleteSong(string id)
         {
@@ -151,6 +186,15 @@ namespace AudioHub
         public static bool IsSongDownloaded(string id)
         {
             return Directory.Exists(GetSongDirectory(id));
+        }
+        public static Song[] GetSongsFromIDs(string[] ids)
+        {
+            Song[] songs = new Song[ids.Length];
+            for (int i = 0; i < songs.Length; i++)
+            {
+                songs[i] = GetSongById(ids[i]);
+            }
+            return songs;
         }
     }
 }
