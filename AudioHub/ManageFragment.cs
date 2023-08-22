@@ -10,13 +10,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AndroidX.RecyclerView.Widget;
-using YoutubeReExplode.Common;
 using Google.Android.Material.FloatingActionButton;
 using Android.Graphics.Drawables;
-using YoutubeReExplode.Playlists;
 using AndroidX.ConstraintLayout.Widget;
 using System.IO;
-using static Android.Provider.MediaStore.Audio;
 
 namespace AudioHub
 {
@@ -24,12 +21,16 @@ namespace AudioHub
     {
         private ViewAdapter<Playlist> playlistVA;
         private ViewAdapter<Song> songVA;
+        private ViewAdapter<Playlist> selectPlaylistVA;
 
         private Playlist currentPlaylist;
         private readonly List<TextView> songCountTexts = new List<TextView>();
 
         private ProgressBar progressBar;
         private Progress<double> downloadProgress;
+
+        private Song currentSong;
+        private readonly Dictionary<Playlist, bool> playlistSelections = new Dictionary<Playlist, bool>();
 
         public override void OnCreate(Bundle savedInstanceState)
         {
@@ -79,6 +80,7 @@ namespace AudioHub
                 progressBar.SetProgress((int)Math.Round(progress * 100), true));
 
             songVA = new ViewAdapter<Song>(Array.Empty<Song>(), Resource.Layout.item_song, BindSongViewAdapter);
+            selectPlaylistVA = new ViewAdapter<Playlist>(playlists, Resource.Layout.item_playlist_select, BindSelectPlaylistViewAdapter);
 
             EditText searchBar = view.FindViewById<EditText>(Resource.Id.etSearchBar);
             searchBar.AfterTextChanged += (s, e) =>
@@ -113,7 +115,8 @@ namespace AudioHub
             songCountTexts.Add(holder.ItemView.FindViewById<TextView>(Resource.Id.tvCount));
             songCountTexts.Last().Text = GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(playlist.title)?.Length);
 
-            holder.ItemView.FindViewById<FloatingActionButton>(Resource.Id.fabActions).Click += (s, e) => ShowPlaylistDialog(playlist);
+            holder.ItemView.FindViewById<FloatingActionButton>(Resource.Id.fabActions)
+                .SetOnClickListener(new OnClickListener(v => ShowPlaylistDialog(playlist)));
         }
         private void ShowPlaylistDialog(Playlist playlist)
         {
@@ -127,7 +130,7 @@ namespace AudioHub
                 view.FindViewById<Button>(Resource.Id.btnView).Click += (s, e) => ShowViewPlaylistDialog(playlist);
                 view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => ShowDeletePlaylistDialog(playlist, dialog);
                 view.FindViewById<Button>(Resource.Id.btnRename).Click += (s, e) => ShowRenamePlaylistDialog(playlist);
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
             });
         }
         private void ShowViewPlaylistDialog(Playlist playlist)
@@ -135,7 +138,7 @@ namespace AudioHub
             MainActivity.ShowDialog(Resource.Layout.dialog_viewPlaylist, (dialog, view) =>
             {
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
 
                 songCountTexts.Add(view.FindViewById<TextView>(Resource.Id.tvCount));
                 songCountTexts.Last().Text = GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(playlist.title)?.Length);
@@ -176,7 +179,7 @@ namespace AudioHub
                 {
                     btnDownload.Click += async (s, e) =>
                     {
-                        dialog.Dismiss();
+                        dialog.Dismiss(); dialog.Dispose();
 
                         progressBar.Indeterminate = false;
                         progressBar.SetProgress(0, true);
@@ -197,7 +200,7 @@ namespace AudioHub
                     {
                         QueueManager.songs.Remove(song);
                         UpdateSongList();
-                        dialog.Dismiss();
+                        dialog.Dismiss(); dialog.Dispose();
                     };
                 }
                 else btnRemoveFromQueue.Visibility = ViewStates.Gone;
@@ -206,10 +209,12 @@ namespace AudioHub
                 {
                     QueueManager.songs.AddLast(song);
                     UpdateSongList();
-                    dialog.Dismiss();
+                    dialog.Dismiss(); dialog.Dispose();
                 };
 
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+                view.FindViewById<Button>(Resource.Id.btnSelectPlaylists).Click += (s, e) => ShowSelectPlaylistsDialog(song, thumbnail);
+
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
                 view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => ShowDeleteSongDialog(song, thumbnail, dialog);
             });
         }
@@ -222,14 +227,14 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
                 view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
                 view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) =>
                 {
                     SongManager.DeleteSong(song.id);
                     UpdateSongList();
 
                     prevDialog.Dismiss();
-                    dialog.Dismiss();
+                    dialog.Dismiss(); dialog.Dispose();
                 };
             });
         }
@@ -241,14 +246,17 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvCount).Text
                     = $"{playlist.songs.Length} song{(playlist.songs.Length == 1 ? "" : "s")}";
 
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
                 view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) =>
                 {
                     PlaylistManager.DeletePlaylist(playlist.title);
+                    songCountTexts.Clear();
+
+                    UpdateSongList();
                     UpdatePlaylistList();
 
                     prevDialog.Dismiss();
-                    dialog.Dismiss();
+                    dialog.Dismiss(); dialog.Dispose();
                 };
             });
         }
@@ -256,7 +264,7 @@ namespace AudioHub
         {
             MainActivity.ShowDialog(Resource.Layout.dialog_newPlaylist, (dialog, view) =>
             {
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
                 view.FindViewById<Button>(Resource.Id.btnCreate).Click += (s, e) =>
                 {
                     string title = view.FindViewById<EditText>(Resource.Id.etPlaylistName).Text;
@@ -267,7 +275,7 @@ namespace AudioHub
                         UpdatePlaylistList();
                     }
 
-                    dialog.Dismiss();
+                    dialog.Dismiss(); dialog.Dispose();
                 };
             });
         }
@@ -279,14 +287,17 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvCount).Text
                     = $"{playlist.songs.Length} song{(playlist.songs.Length == 1 ? "" : "s")}";
 
-                view.FindViewById<Button>(Resource.Id.btnRename).Click += (s, e) => dialog.Dismiss();
-                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+                view.FindViewById<Button>(Resource.Id.btnRename).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
             });
         }
         private void UpdatePlaylistList()
         {
             playlistVA.items = PlaylistManager.GetPlaylists();
             playlistVA.NotifyDataSetChanged();
+
+            selectPlaylistVA.items = PlaylistManager.GetPlaylists();
+            selectPlaylistVA.NotifyDataSetChanged();
         }
         private void UpdateSongList()
         {
@@ -295,13 +306,60 @@ namespace AudioHub
 
             for (int i = 0; i < songCountTexts.Count; i++)
             {
-                if (songCountTexts[i] == null)
-                {
-                    songCountTexts.Remove(songCountTexts[i]);
-                    i--;
-                }
-                else songCountTexts[i].Text = GetSongCountText(songVA.items.Count());
+                songCountTexts[i].Text = GetSongCountText(songVA.items.Count());
             }
+        }
+        private void ShowSelectPlaylistsDialog(Song song, Drawable thumbnail)
+        {
+            MainActivity.ShowDialog(Resource.Layout.dialog_selectPlaylists, (dialog, view) =>
+            {
+                view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
+                view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
+                view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
+
+                RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvPlaylistSelection);
+                rv.SetAdapter(selectPlaylistVA);
+                rv.SetLayoutManager(new LinearLayoutManager(view.Context));
+
+                view.FindViewById<Button>(Resource.Id.btnConfirm).Click += (s, e) =>
+                {
+                    foreach (KeyValuePair<Playlist, bool> playslistSelection in playlistSelections)
+                    {
+                        bool inPlaylist = PlaylistManager.IsSongInPlaylist(playslistSelection.Key.title, song.id);
+
+                        if (inPlaylist != playslistSelection.Value)
+                        {
+                            if (playslistSelection.Value) PlaylistManager.AddSongToPlaylist(playslistSelection.Key.title, song.id);
+                            else PlaylistManager.RemoveSongFromPlaylist(playslistSelection.Key.title, song.id);
+
+                            UpdateSongList();
+                            UpdatePlaylistList();
+                        }
+                    }
+
+                    dialog.Dismiss(); dialog.Dispose();
+                };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => { dialog.Dismiss(); dialog.Dispose(); };
+
+                currentSong = song;
+                playlistSelections.Clear();
+            });
+        }
+        private void BindSelectPlaylistViewAdapter(RecyclerView.ViewHolder holder, Playlist playlist)
+        {
+            holder.ItemView.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
+
+            songCountTexts.Add(holder.ItemView.FindViewById<TextView>(Resource.Id.tvCount));
+            songCountTexts.Last().Text = GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(playlist.title)?.Length);
+
+            bool inPlaylist = PlaylistManager.IsSongInPlaylist(playlist.title, currentSong.id);
+            playlistSelections.Add(playlist, inPlaylist);
+
+            CheckBox checkBox = holder.ItemView.FindViewById<CheckBox>(Resource.Id.cbSelect);
+            checkBox.Checked = inPlaylist;
+
+            checkBox.CheckedChange += (s, e) => playlistSelections[playlist] = e.IsChecked;
         }
     }
 }

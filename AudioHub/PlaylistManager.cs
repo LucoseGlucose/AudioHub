@@ -77,7 +77,12 @@ namespace AudioHub
                 return ids;
             }
 
-            return Directory.GetFiles($"{PlaylistDirectory}/{title}");
+            string[] files = Directory.GetFiles($"{PlaylistDirectory}/{title}");
+            for (int i = 0; i < files.Length; i++)
+            {
+                files[i] = Path.GetFileNameWithoutExtension(files[i]);
+            }
+            return files;
         }
         public static Song[] GetSongsInPlaylist(string title)
         {
@@ -113,6 +118,10 @@ namespace AudioHub
             }
 
             return new Playlist(downloadedPlaylistName, songPaths);
+        }
+        public static bool IsSongInPlaylist(string playlist, string songId)
+        {
+            return File.Exists($"{PlaylistDirectory}/{playlist}/{songId}.song");
         }
     }
 }

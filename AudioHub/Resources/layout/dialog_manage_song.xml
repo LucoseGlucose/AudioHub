@@ -108,11 +108,11 @@
         app:iconPadding="1dp"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAddToPlaylist"
+        android:id="@+id/btnSelectPlaylists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
-        android:text="Add To Playlist"
+        android:text="Select Playlists"
         app:icon="@drawable/round_playlist_add_24"
         app:iconGravity="textStart"
         app:iconPadding="1dp"/>
@@ -133,6 +133,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
         android:text="Cancel"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:icon="@drawable/round_close_24"
         app:iconGravity="textStart"
         app:iconPadding="1dp"/>
