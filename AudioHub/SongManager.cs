@@ -54,17 +54,14 @@ namespace AudioHub
 
             IAsyncEnumerator<Batch<ISearchResult>> results = ytClient.Value.Search.
                 GetResultBatchesAsync(query, SearchFilter.Video, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            await results.MoveNextAsync();
 
-            while (await results.MoveNextAsync())
+            foreach (ISearchResult result in results.Current.Items)
             {
-                foreach (ISearchResult result in results.Current.Items)
-                {
-                    if (!(result is VideoSearchResult video)) continue;
-                    Song song = GetSongFromVideo(video);
+                if (!(result is VideoSearchResult video)) continue;
+                Song song = GetSongFromVideo(video);
 
-                    if (CacheThumbnail(video, song)) songs.Add(song);
-                }
-                break;
+                if (CacheThumbnail(video, song)) songs.Add(song);
             }
 
             return songs;
@@ -73,18 +70,18 @@ namespace AudioHub
         {
             if (!Directory.Exists(ThumbnailCacheDirectory)) Directory.CreateDirectory(ThumbnailCacheDirectory);
 
-            foreach (string file in Directory.EnumerateFiles(ThumbnailCacheDirectory))
+            foreach (string dir in Directory.EnumerateDirectories(ThumbnailCacheDirectory))
             {
-                File.Delete(file);
+                Directory.Delete(dir, true);
             }
         }
         public static void ClearCachedSongs()
         {
             if (!Directory.Exists(SongCacheDirectory)) Directory.CreateDirectory(SongCacheDirectory);
 
-            foreach (string file in Directory.EnumerateFiles(SongCacheDirectory))
+            foreach (string dir in Directory.EnumerateDirectories(SongCacheDirectory))
             {
-                File.Delete(file);
+                Directory.Delete(dir, true);
             }
         }
         public static async Task<Song> DownloadSong(string videoId, Progress<double> progress, CancellationToken cancellationToken)
