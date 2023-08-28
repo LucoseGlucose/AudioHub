@@ -29,6 +29,8 @@ namespace AudioHub
         private readonly Dictionary<Playlist, bool> playlistSelections = new Dictionary<Playlist, bool>();
         private ViewAdapter<Playlist> selectPlaylistVA;
 
+        private List<Song> songs = new List<Song>();
+
         public override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -42,12 +44,15 @@ namespace AudioHub
             base.OnViewCreated(view, savedInstanceState);
 
             RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvList);
-            ViewAdapter<Song> viewAdapter = new ViewAdapter<Song>(new List<Song>(), Resource.Layout.item_song, BindSongViewAdapter);
+            ViewAdapter<Song> viewAdapter = new ViewAdapter<Song>(songs, Resource.Layout.item_song, BindSongViewAdapter);
 
             rv.SetAdapter(viewAdapter);
             rv.SetLayoutManager(new LinearLayoutManager(view.Context));
 
-            view.FindViewById<EditText>(Resource.Id.etSearchBar).SetOnEditorActionListener(new OnEditorActionListener((tv, aID, e) =>
+            EditText etSearchBar = view.FindViewById<EditText>(Resource.Id.etSearchBar);
+            etSearchBar.Text = SongManager.lastSearchQuery;
+
+            etSearchBar.SetOnEditorActionListener(new OnEditorActionListener((tv, aID, e) =>
             {
                 if (aID != ImeAction.Go) return false;
 
@@ -81,6 +86,7 @@ namespace AudioHub
             {
                 progressBar.Indeterminate = true;
                 viewAdapter.items = await SongManager.SearchForSongs(query, default);
+                songs = viewAdapter.items as List<Song>;
 
                 progressBar.Indeterminate = false;
                 progressBar.SetProgress(100, true);
@@ -104,7 +110,7 @@ namespace AudioHub
         }
         private void ShowSongDialog(Song song, Drawable thumbnail)
         {
-            MainActivity.ShowDialog(Resource.Layout.dialog_songs_song, (dialog, view) =>
+            MainActivity.ShowDialog(Resource.Layout.dialog_songs_song, null, (dialog, view) =>
             {
                 view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
@@ -126,6 +132,15 @@ namespace AudioHub
                 }
                 else btnDownload.Visibility = ViewStates.Gone;
 
+                view.FindViewById<Button>(Resource.Id.btnPlay).Click += async (s, e) =>
+                {
+                    dialog.Dismiss();
+                    dialog.Dispose();
+
+                    if (!SongManager.IsSongDownloaded(song.id)) await SongManager.CacheSong(song.id, downloadProgress, default);
+                    SongPlayer.Play(song);
+                };
+
                 view.FindViewById<Button>(Resource.Id.btnSelectPlaylists).Click += (s, e) => ShowSelectPlaylistsDialog(song, thumbnail, dialog);
 
                 view.FindViewById<Button>(Resource.Id.btnPlay).Click += async (s, e) =>
@@ -142,7 +157,7 @@ namespace AudioHub
         }
         private void ShowSelectPlaylistsDialog(Song song, Drawable thumbnail, Android.App.Dialog prevDialog)
         {
-            MainActivity.ShowDialog(Resource.Layout.dialog_selectPlaylists, (dialog, view) =>
+            MainActivity.ShowDialog(Resource.Layout.dialog_selectPlaylists, null, (dialog, view) =>
             {
                 view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;

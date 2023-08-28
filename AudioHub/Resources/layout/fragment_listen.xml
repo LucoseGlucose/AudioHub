@@ -24,6 +24,79 @@
         app:menuAlignmentMode="auto"
         app:navigationIcon="@drawable/round_close_24"/>
 
+    <ImageView
+        android:id="@id/imgThumbnail"
+        android:contentDescription="Thumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginVertical="8dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+        android:id="@id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:layout_margin="8dp"
+        app:layout_constraintTop_toBottomOf="@id/imgThumbnail"/>
+
+    <TextView
+        android:id="@id/tvArtist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textAlignment="center"
+        android:textSize="15sp"
+        android:layout_margin="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"/>
+
+    <TextView
+        android:id="@+id/tvElapsedDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:ellipsize="end"
+        android:text="0:00"
+        android:maxLength="4"
+        android:maxLines="1"
+        android:layout_marginLeft="15dp"
+        android:textAlignment="viewEnd"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/sSongProgress"
+        app:layout_constraintTop_toTopOf="@id/sSongProgress"/>
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/sSongProgress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:thumbRadius="8dp"
+        app:layout_constraintLeft_toRightOf="@id/tvElapsedDuration"
+        app:layout_constraintRight_toLeftOf="@id/tvFullDuration"
+        app:layout_constraintBottom_toTopOf="@id/fabPlayPause"/>
+
+    <TextView
+        android:id="@+id/tvFullDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:ellipsize="end"
+        android:text="0:00"
+        android:maxLength="4"
+        android:maxLines="1"
+        android:layout_marginRight="15dp"
+        android:textAlignment="viewStart"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/sSongProgress"
+        app:layout_constraintTop_toTopOf="@id/sSongProgress"/>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabPlayPause"
         android:layout_width="wrap_content"

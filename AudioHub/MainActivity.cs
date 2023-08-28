@@ -18,10 +18,12 @@ using AndroidX.Activity;
 using Android.Bluetooth;
 using YoutubeReExplode.Videos;
 using YoutubeReExplode.Playlists;
+using System.IO;
+using Android.Content.Res;
 
 namespace AudioHub
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait)]
     public class MainActivity : FragmentActivity
     {
         private readonly Dictionary<int, AndroidX.Fragment.App.Fragment> fragments = new Dictionary<int, AndroidX.Fragment.App.Fragment>
@@ -52,8 +54,15 @@ namespace AudioHub
             await Permissions.RequestAsync<Permissions.StorageRead>();
             await Permissions.RequestAsync<Permissions.StorageWrite>();
 
+            VerifyDirectory(SongManager.SongDownloadDirectory);
+            VerifyDirectory(SongManager.SongCacheDirectory);
+            VerifyDirectory(SongManager.ThumbnailCacheDirectory);
+            VerifyDirectory(PlaylistManager.PlaylistDirectory);
+
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
+
+            SongPlayer.Init();
         }
         protected override void OnDestroy()
         {
@@ -61,6 +70,8 @@ namespace AudioHub
 
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
+
+            SongPlayer.Cleanup();
         }
         private void BNavView_ItemSelected(object sender, NavigationBarView.ItemSelectedEventArgs e)
         {
@@ -81,10 +92,13 @@ namespace AudioHub
             ft.Commit();
 
             currentPage = newPage;
+            bNavView.SelectedItemId = newPage;
         }
-        public static void ShowDialog(int layoutResID, System.Action<Dialog, View> bindViewAction)
+        public static void ShowDialog(int layoutResID, Stack<Dialog> stack, System.Action<Dialog, View> bindViewAction)
         {
             Dialog dialog = new Dialog(activity, Resource.Style.AppTheme);
+            stack?.Push(dialog);
+
             dialog.SetCancelable(true);
             dialog.SetCanceledOnTouchOutside(true);
 
@@ -95,6 +109,10 @@ namespace AudioHub
             dialog.SetContentView(view);
             dialog.Create();
             dialog.Show();
+        }
+        public static void VerifyDirectory(string directory)
+        {
+            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         }
     }
 }

@@ -20,18 +20,24 @@ namespace AudioHub
         public string fullTitle;
         public string fullArtist;
         public int durationSecs;
+        public DateTime downloadDate;
 
-        public Song(string id, string fullTitle, string fullArtist, int durationSecs)
+        public Song(string id, string fullTitle, string fullArtist, int durationSecs, DateTime downloadDate)
         {
             this.id = id;
             this.fullTitle = fullTitle;
             this.fullArtist = fullArtist;
             this.durationSecs = durationSecs;
+            this.downloadDate = downloadDate;
 
             title = GetSimpleTitle(fullTitle);
             artist = GetSimpleArtist(fullTitle, fullArtist);
         }
         public readonly string GetDurationString()
+        {
+            return GetDurationString(durationSecs);
+        }
+        public static string GetDurationString(int durationSecs)
         {
             return $"{Math.Floor((decimal)(durationSecs / 60))}:{((durationSecs % 60) < 10 ? "0" : "")}{durationSecs % 60}";
         }

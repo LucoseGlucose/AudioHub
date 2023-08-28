@@ -96,7 +96,7 @@ namespace AudioHub
             {
                 songs[i] = SongManager.GetSongById(songIDs[i]);
             }
-            return songs;
+            return songs.OrderBy(s => DateTime.UtcNow - s.downloadDate).ToArray();
         }
         public static void AddSongToPlaylist(string playlist, string songId)
         {

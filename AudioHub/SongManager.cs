@@ -30,17 +30,17 @@ namespace AudioHub
         public static string SongDownloadDirectory => $"{MainActivity.activity.GetExternalFilesDir(null).AbsolutePath}/Songs";
         public static string ThumbnailCacheDirectory => $"{MainActivity.activity.GetExternalCacheDirs().First().AbsolutePath}/Thumbnails";
         public static string SongCacheDirectory => $"{MainActivity.activity.GetExternalCacheDirs().First().AbsolutePath}/Songs";
-        private static string lastSearchQuery;
+        public static string lastSearchQuery;
 
         public static Song GetSongFromVideo(Video video)
         {
             return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
-                (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
+                (int)Math.Ceiling(video.Duration.Value.TotalSeconds), DateTime.UtcNow);
         }
         public static Song GetSongFromVideo(VideoSearchResult video)
         {
             return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
-                (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
+                (int)Math.Ceiling(video.Duration.Value.TotalSeconds), DateTime.UtcNow);
         }
         public static async Task<List<Song>> SearchForSongs(string query, CancellationToken cancellationToken)
         {
@@ -68,17 +68,13 @@ namespace AudioHub
         }
         public static void ClearCachedThumbnails()
         {
-            if (!Directory.Exists(ThumbnailCacheDirectory)) Directory.CreateDirectory(ThumbnailCacheDirectory);
-
-            foreach (string dir in Directory.EnumerateDirectories(ThumbnailCacheDirectory))
+            foreach (string file in Directory.EnumerateFiles(ThumbnailCacheDirectory))
             {
-                Directory.Delete(dir, true);
+                File.Delete(file);
             }
         }
         public static void ClearCachedSongs()
         {
-            if (!Directory.Exists(SongCacheDirectory)) Directory.CreateDirectory(SongCacheDirectory);
-
             foreach (string dir in Directory.EnumerateDirectories(SongCacheDirectory))
             {
                 Directory.Delete(dir, true);
@@ -120,8 +116,6 @@ namespace AudioHub
         }
         public static bool CacheThumbnail(VideoSearchResult video, Song song)
         {
-            if (!Directory.Exists(ThumbnailCacheDirectory)) Directory.CreateDirectory(ThumbnailCacheDirectory);
-
             Thumbnail thumbnail = video.Thumbnails.Where(t => t.Url.Contains("maxresdefault.jpg")).FirstOrDefault()
                 ?? video.Thumbnails.GetWithHighestResolution();
 
