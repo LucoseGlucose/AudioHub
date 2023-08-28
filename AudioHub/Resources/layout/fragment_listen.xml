@@ -24,8 +24,19 @@
         app:menuAlignmentMode="auto"
         app:navigationIcon="@drawable/round_close_24"/>
 
+    <TextView
+        android:id="@+id/tvPlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textAlignment="center"
+        android:textSize="15sp"
+        android:layout_margin="8dp"
+        app:layout_constraintBottom_toTopOf="@id/imgThumbnail"/>
+
     <ImageView
-        android:id="@id/imgThumbnail"
+        android:id="@+id/imgThumbnail"
         android:contentDescription="Thumbnail"
         android:layout_width="match_parent"
         android:layout_height="200dp"
@@ -36,7 +47,7 @@
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <TextView
-        android:id="@id/tvTitle"
+        android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="1"
@@ -47,7 +58,7 @@
         app:layout_constraintTop_toBottomOf="@id/imgThumbnail"/>
 
     <TextView
-        android:id="@id/tvArtist"
+        android:id="@+id/tvArtist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="1"

@@ -13,6 +13,7 @@ using Google.Android.Material.FloatingActionButton;
 using Google.Android.Material.BottomAppBar;
 using Google.Android.Material.Slider;
 using Android.Graphics.Drawables;
+using YoutubeReExplode.Playlists;
 
 namespace AudioHub
 {
@@ -28,6 +29,7 @@ namespace AudioHub
         private TextView tvElapsedDuration;
         private TextView tvFullDuration;
 
+        private TextView tvSongPlaylist;
         private ImageView imgSongThumbnail;
         private TextView tvSongTitle;
         private TextView tvSongArtist;
@@ -73,6 +75,7 @@ namespace AudioHub
 
             songTimer = new Handler(Looper.MyLooper());
 
+            tvSongPlaylist = view.FindViewById<TextView>(Resource.Id.tvPlaylist);
             imgSongThumbnail = view.FindViewById<ImageView>(Resource.Id.imgThumbnail);
             tvSongTitle = view.FindViewById<TextView>(Resource.Id.tvTitle);
             tvSongArtist = view.FindViewById<TextView>(Resource.Id.tvArtist);
@@ -80,13 +83,20 @@ namespace AudioHub
             imgSongThumbnail.SetImageDrawable(await Drawable.CreateFromPathAsync
                 ($"{SongManager.GetSongDirectory(SongPlayer.currentSong.id)}/Thumbnail.jpg"));
 
+            tvSongPlaylist.Text = SongPlayer.currentPlaylist.title;
             tvSongTitle.Text = SongPlayer.currentSong.title;
             tvSongArtist.Text = SongPlayer.currentSong.artist;
 
             fabPlayPause.SetImageDrawable(MainActivity.activity.GetDrawable(
                 SongPlayer.mediaPlayer.IsPlaying ? Resource.Drawable.round_pause_24 : Resource.Drawable.round_play_arrow_24));
 
-            SongPlayer.OnPlay += async (song) =>
+            fabLoop.SetImageDrawable(MainActivity.activity.GetDrawable(
+                SongPlayer.loop ? Resource.Drawable.round_replay_circle_filled_24 : Resource.Drawable.round_replay_24));
+
+            fabShuffle.SetImageDrawable(MainActivity.activity.GetDrawable(
+                SongPlayer.shuffle ? Resource.Drawable.round_shuffle_on_24 : Resource.Drawable.round_shuffle_24));
+
+            SongPlayer.OnPlay += async (song, playlist) =>
             {
                 fabPlayPause.SetImageDrawable(MainActivity.activity.GetDrawable(Resource.Drawable.round_pause_24));
 
@@ -96,6 +106,7 @@ namespace AudioHub
                 imgSongThumbnail.SetImageDrawable(await Drawable.CreateFromPathAsync
                     ($"{SongManager.GetSongDirectory(SongPlayer.currentSong.id)}/Thumbnail.jpg"));
 
+                tvSongPlaylist.Text = playlist.title;
                 tvSongTitle.Text = song.title;
                 tvSongArtist.Text = song.artist;
 
@@ -118,6 +129,23 @@ namespace AudioHub
             {
                 if (SongPlayer.mediaPlayer.IsPlaying) SongPlayer.Pause();
                 else SongPlayer.Resume();
+            };
+
+            fabNext.Click += (s, e) => SongPlayer.PlayNextSong();
+            fabPrev.Click += (s, e) => SongPlayer.PlayPreviousSong();
+
+            fabLoop.Click += (s, e) =>
+            {
+                SongPlayer.loop = !SongPlayer.loop;
+                fabLoop.SetImageDrawable(MainActivity.activity.GetDrawable(
+                    SongPlayer.loop ? Resource.Drawable.round_replay_circle_filled_24 : Resource.Drawable.round_replay_24));
+            };
+
+            fabShuffle.Click += (s, e) =>
+            {
+                SongPlayer.shuffle = !SongPlayer.shuffle;
+                fabShuffle.SetImageDrawable(MainActivity.activity.GetDrawable(
+                    SongPlayer.shuffle ? Resource.Drawable.round_shuffle_on_24 : Resource.Drawable.round_shuffle_24));
             };
         }
         private void TimerUpdate()

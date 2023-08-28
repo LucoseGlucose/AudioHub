@@ -88,6 +88,7 @@ namespace AudioHub
         {
             if (title == downloadedPlaylistName) return SongManager.GetSongsFromIDs(GetDownloadedSongsPlaylist().songs);
             if (title == queuePlaylistName) return QueueManager.songs.ToArray();
+            if (string.IsNullOrWhiteSpace(title)) return Array.Empty<Song>();
 
             string[] songIDs = GetSongIDsInPlaylist(title);
             Song[] songs = new Song[songIDs.Length];

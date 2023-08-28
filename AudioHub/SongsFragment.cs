@@ -138,7 +138,7 @@ namespace AudioHub
                     dialog.Dispose();
 
                     if (!SongManager.IsSongDownloaded(song.id)) await SongManager.CacheSong(song.id, downloadProgress, default);
-                    SongPlayer.Play(song);
+                    SongPlayer.Play(song, default);
                 };
 
                 view.FindViewById<Button>(Resource.Id.btnSelectPlaylists).Click += (s, e) => ShowSelectPlaylistsDialog(song, thumbnail, dialog);

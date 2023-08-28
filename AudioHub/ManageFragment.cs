@@ -230,7 +230,7 @@ namespace AudioHub
                 view.FindViewById<Button>(Resource.Id.btnSelectPlaylists).Click += (s, e) => ShowSelectPlaylistsDialog(song, thumbnail);
                 view.FindViewById<Button>(Resource.Id.btnPlay).Click += (s, e) =>
                 {
-                    SongPlayer.Play(song);
+                    SongPlayer.Play(song, currentPlaylist);
 
                     DismissDialog();
                     DismissDialog();
