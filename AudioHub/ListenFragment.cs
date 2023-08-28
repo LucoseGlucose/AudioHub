@@ -80,8 +80,10 @@ namespace AudioHub
             tvSongTitle = view.FindViewById<TextView>(Resource.Id.tvTitle);
             tvSongArtist = view.FindViewById<TextView>(Resource.Id.tvArtist);
 
-            imgSongThumbnail.SetImageDrawable(await Drawable.CreateFromPathAsync
-                ($"{SongManager.GetSongDirectory(SongPlayer.currentSong.id)}/Thumbnail.jpg"));
+            imgSongThumbnail.SetImageDrawable(await Drawable.CreateFromPathAsync(
+                SongManager.IsSongDownloaded(SongPlayer.currentSong.id) ?
+                $"{SongManager.GetSongDirectory(SongPlayer.currentSong.id)}/Thumbnail.jpg"
+                : $"{SongManager.SongCacheDirectory}/{SongPlayer.currentSong.id}/Thumbnail.jpg"));
 
             tvSongPlaylist.Text = SongPlayer.currentPlaylist.title;
             tvSongTitle.Text = SongPlayer.currentSong.title;
@@ -103,8 +105,9 @@ namespace AudioHub
                 tvElapsedDuration.Text = Song.GetDurationString(0);
                 tvFullDuration.Text = Song.GetDurationString(song.durationSecs);
 
-                imgSongThumbnail.SetImageDrawable(await Drawable.CreateFromPathAsync
-                    ($"{SongManager.GetSongDirectory(SongPlayer.currentSong.id)}/Thumbnail.jpg"));
+                imgSongThumbnail.SetImageDrawable(await Drawable.CreateFromPathAsync(
+                    SongManager.IsSongDownloaded(song.id) ? $"{SongManager.GetSongDirectory(song.id)}/Thumbnail.jpg"
+                    : $"{SongManager.SongCacheDirectory}/{song.id}/Thumbnail.jpg"));
 
                 tvSongPlaylist.Text = playlist.title;
                 tvSongTitle.Text = song.title;

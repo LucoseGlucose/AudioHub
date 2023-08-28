@@ -138,19 +138,13 @@ namespace AudioHub
                     dialog.Dispose();
 
                     if (!SongManager.IsSongDownloaded(song.id)) await SongManager.CacheSong(song.id, downloadProgress, default);
+
+                    MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
                     SongPlayer.Play(song, default);
                 };
 
-                view.FindViewById<Button>(Resource.Id.btnSelectPlaylists).Click += (s, e) => ShowSelectPlaylistsDialog(song, thumbnail, dialog);
-
-                view.FindViewById<Button>(Resource.Id.btnPlay).Click += async (s, e) =>
-                {
-                    if (!SongManager.IsSongDownloaded(song.id))
-                    {
-                        await SongManager.CacheSong(song.id, downloadProgress, default);
-                        progressBar.SetProgress(0, true);
-                    }
-                };
+                view.FindViewById<Button>(Resource.Id.btnSelectPlaylists).Click += (s, e) =>
+                    ShowSelectPlaylistsDialog(song, thumbnail, dialog);
 
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
             });
