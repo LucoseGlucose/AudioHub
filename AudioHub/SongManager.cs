@@ -42,6 +42,10 @@ namespace AudioHub
             return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
                 (int)Math.Ceiling(video.Duration.Value.TotalSeconds), DateTime.UtcNow);
         }
+        public static async Task<Song> GetSongFromVideo(VideoId videoId)
+        {
+            return GetSongFromVideo(await ytClient.Value.Videos.GetAsync(videoId));
+        }
         public static async Task<List<Song>> SearchForSongs(string query, CancellationToken cancellationToken)
         {
             if (query != lastSearchQuery)
@@ -129,6 +133,26 @@ namespace AudioHub
             }
 
             return true;
+        }
+        public static bool CacheThumbnail(Video video, Song song)
+        {
+            Thumbnail thumbnail = video.Thumbnails.Where(t => t.Url.Contains("maxresdefault.jpg")).FirstOrDefault()
+                ?? video.Thumbnails.GetWithHighestResolution();
+
+            try
+            {
+                webClient.Value.DownloadFile(new Uri(thumbnail.Url.Split('?').First()), $"{ThumbnailCacheDirectory}/{song.id}.jpg");
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+        public static async Task<bool> CacheThumbnail(Song song)
+        {
+            return CacheThumbnail(await ytClient.Value.Videos.GetAsync(VideoId.Parse(song.id)), song);
         }
         public static async Task<Song> CacheSong(string videoId, Progress<double> progress, CancellationToken cancellationToken)
         {

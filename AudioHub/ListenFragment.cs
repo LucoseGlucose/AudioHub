@@ -146,7 +146,7 @@ namespace AudioHub
 
             fabShuffle.Click += (s, e) =>
             {
-                SongPlayer.shuffle = !SongPlayer.shuffle;
+                SongPlayer.ToggleShuffle();
                 fabShuffle.SetImageDrawable(MainActivity.activity.GetDrawable(
                     SongPlayer.shuffle ? Resource.Drawable.round_shuffle_on_24 : Resource.Drawable.round_shuffle_24));
             };

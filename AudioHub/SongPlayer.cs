@@ -17,7 +17,8 @@ namespace AudioHub
         public static MediaPlayer mediaPlayer { get; private set; }
         public static Song currentSong { get; private set; }
         public static Playlist currentPlaylist { get; private set; }
-        public static Stack<(Song, Playlist)> previousSongs = new Stack<(Song, Playlist)>();
+        public static List<Song> currentSongs { get; private set; }
+        public static int currentSongIndex { get; private set; }
 
         public static bool loop;
         public static bool shuffle;
@@ -39,11 +40,13 @@ namespace AudioHub
         public static void Play(Song song, Playlist playlist)
         {
             if (string.IsNullOrWhiteSpace(song.id)) return;
+            currentSongs ??= PlaylistManager.GetSongsInPlaylist(playlist.title).ToList();
+
+            if (currentSongs.Count > 1) currentSongIndex = currentSongs.IndexOf(song);
+            else currentSongIndex = 0;
 
             if (song.id != currentSong.id || playlist.title != currentPlaylist.title)
             {
-                previousSongs.Push((currentSong, currentPlaylist));
-
                 currentSong = song;
                 currentPlaylist = playlist;
 
@@ -73,52 +76,45 @@ namespace AudioHub
             mediaPlayer.SeekTo(secs * 1000);
             OnSeek?.Invoke(secs);
         }
+        public static void ToggleShuffle()
+        {
+            shuffle = !shuffle;
+            if (shuffle) ShuffleList(currentSongs);
+            else currentSongs = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title).ToList();
+        }
+        public static void ShuffleList<T>(IList<T> list)
+        {
+            int i = list.Count;
+
+            while (i > 1)
+            {
+                i--;
+                int random = MainActivity.activity.shuffleSeed.Next(i + 1);
+                (list[i], list[random]) = (list[random], list[i]);
+            }
+        }
         public static void PlayNextSong()
         {
             Play(GetNextSong(), currentPlaylist);
         }
         public static void PlayPreviousSong()
         {
-            if (!previousSongs.TryPop(out (Song, Playlist) previous)) return;
-            Play(previous.Item1, previous.Item2);
+            int prev = currentSongIndex - 1;
+            if (prev < 0) prev = currentSongs.Count - 1;
+
+            Play(currentSongs[prev], currentPlaylist);
         }
         public static Song GetNextSong()
         {
+            if (currentSongs == null || currentSongs.Count == 1) return default;
+
             if (loop) return currentSong;
-
-            if (shuffle)
-            {
-                if (!QueueManager.IsEmpty())
-                {
-                    Song song = GetRandomSongFromPlaylist(PlaylistManager.queuePlaylistName, currentSong.id);
-                    QueueManager.songs.Remove(song);
-                    return song;
-                }
-
-                return GetRandomSongFromPlaylist(currentPlaylist.title, currentSong.id);
-            }
-
             if (!QueueManager.IsEmpty()) return QueueManager.GetNextSong();
 
-            List<Song> songs = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title).ToList();
-            if (!songs.Contains(currentSong)) return default;
+            int next = currentSongIndex + 1;
+            if (next >= currentSongs.Count) next = 0;
 
-            int i = songs.IndexOf(currentSong);
-            if (i + 1 >= songs.Count) return songs[0];
-
-            return songs[i + 1];
-        }
-        public static Song GetRandomSongFromPlaylist(string title, string currentId)
-        {
-            string[] ids = PlaylistManager.GetSongIDsInPlaylist(title);
-            string randomId = currentId;
-
-            while (randomId == currentId)
-            {
-                randomId = ids[new Random().Next(0, ids.Length)];
-            }
-
-            return SongManager.GetSongById(randomId);
+            return currentSongs[next];
         }
     }
 }

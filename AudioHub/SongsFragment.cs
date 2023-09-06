@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using AndroidX.ConstraintLayout.Widget;
 using YoutubeReExplode.Videos;
 using Android.Views.InputMethods;
-using static Android.Provider.MediaStore.Audio;
 
 namespace AudioHub
 {
@@ -79,8 +78,16 @@ namespace AudioHub
 
             if (VideoId.TryParse(query).HasValue)
             {
-                await SongManager.DownloadSong(VideoId.Parse(query), downloadProgress, default);
+                progressBar.Indeterminate = true;
+
+                viewAdapter.items = new List<Song>() { await SongManager.GetSongFromVideo(VideoId.Parse(query)) };
+                songs = viewAdapter.items as List<Song>;
+                await SongManager.CacheThumbnail(songs[0]);
+
+                progressBar.Indeterminate = false;
                 progressBar.SetProgress(100, true);
+
+                viewAdapter.NotifyDataSetChanged();
             }
             else
             {
@@ -141,6 +148,15 @@ namespace AudioHub
 
                     MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
                     SongPlayer.Play(song, default);
+                };
+
+                view.FindViewById<Button>(Resource.Id.btnAddToQueue).Click += async (s, e) =>
+                {
+                    dialog.Dismiss();
+                    dialog.Dispose();
+
+                    if (!SongManager.IsSongDownloaded(song.id)) await SongManager.CacheSong(song.id, downloadProgress, default);
+                    QueueManager.songs.AddLast(song);
                 };
 
                 view.FindViewById<Button>(Resource.Id.btnSelectPlaylists).Click += (s, e) =>

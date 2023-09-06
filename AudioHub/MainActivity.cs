@@ -20,6 +20,7 @@ using YoutubeReExplode.Videos;
 using YoutubeReExplode.Playlists;
 using System.IO;
 using Android.Content.Res;
+using System;
 
 namespace AudioHub
 {
@@ -35,6 +36,7 @@ namespace AudioHub
 
         private int currentPage;
         private BottomNavigationView bNavView;
+        public Random shuffleSeed = new Random();
 
         public static MainActivity activity;
 
