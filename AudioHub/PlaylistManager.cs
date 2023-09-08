@@ -77,7 +77,9 @@ namespace AudioHub
                 return ids;
             }
 
-            string[] files = Directory.GetFiles($"{PlaylistDirectory}/{title}");
+            string[] files = Directory.EnumerateFiles($"{PlaylistDirectory}/{title}")
+                .OrderBy(f => new FileInfo(f).CreationTimeUtc.Ticks).ToArray();
+
             for (int i = 0; i < files.Length; i++)
             {
                 files[i] = Path.GetFileNameWithoutExtension(files[i]);
@@ -97,7 +99,7 @@ namespace AudioHub
             {
                 songs[i] = SongManager.GetSongById(songIDs[i]);
             }
-            return songs.OrderBy(s => DateTime.UtcNow - s.downloadDate).ToArray();
+            return songs;
         }
         public static void AddSongToPlaylist(string playlist, string songId)
         {
@@ -111,7 +113,9 @@ namespace AudioHub
         }
         public static Playlist GetDownloadedSongsPlaylist()
         {
-            string[] songPaths = Directory.GetDirectories(SongManager.SongDownloadDirectory);
+            string[] songPaths = Directory.EnumerateDirectories(SongManager.SongDownloadDirectory)
+                .OrderBy(s => new DirectoryInfo(s).CreationTimeUtc.Ticks).ToArray();
+
             for (int i = 0; i < songPaths.Length; i++)
             {
                 DirectoryInfo info = new DirectoryInfo(songPaths[i]);

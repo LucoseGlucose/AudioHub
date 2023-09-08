@@ -20,15 +20,13 @@ namespace AudioHub
         public string fullTitle;
         public string fullArtist;
         public int durationSecs;
-        public DateTime downloadDate;
 
-        public Song(string id, string fullTitle, string fullArtist, int durationSecs, DateTime downloadDate)
+        public Song(string id, string fullTitle, string fullArtist, int durationSecs)
         {
             this.id = id;
             this.fullTitle = fullTitle;
             this.fullArtist = fullArtist;
             this.durationSecs = durationSecs;
-            this.downloadDate = downloadDate;
 
             title = GetSimpleTitle(fullTitle);
             artist = GetSimpleArtist(fullTitle, fullArtist);

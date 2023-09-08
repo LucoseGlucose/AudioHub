@@ -35,12 +35,12 @@ namespace AudioHub
         public static Song GetSongFromVideo(Video video)
         {
             return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
-                (int)Math.Ceiling(video.Duration.Value.TotalSeconds), DateTime.UtcNow);
+                (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
         }
         public static Song GetSongFromVideo(VideoSearchResult video)
         {
             return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
-                (int)Math.Ceiling(video.Duration.Value.TotalSeconds), DateTime.UtcNow);
+                (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
         }
         public static async Task<Song> GetSongFromVideo(VideoId videoId)
         {
