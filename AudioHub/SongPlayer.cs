@@ -79,7 +79,16 @@ namespace AudioHub
         public static void ToggleShuffle()
         {
             shuffle = !shuffle;
-            if (shuffle) ShuffleList(currentSongs);
+            if (shuffle)
+            {
+                ShuffleList(currentSongs);
+
+                if (currentSongs.Contains(currentSong))
+                {
+                    currentSongs.Remove(currentSong);
+                    currentSongs.Add(currentSong);
+                }
+            }
             else currentSongs = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title).ToList();
         }
         public static void ShuffleList<T>(IList<T> list)
