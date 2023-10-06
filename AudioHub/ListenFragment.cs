@@ -14,34 +14,33 @@ using Google.Android.Material.BottomAppBar;
 using Google.Android.Material.Slider;
 using Android.Graphics.Drawables;
 using YoutubeReExplode.Playlists;
-using Android.Support.V4.Media.Session;
 
 namespace AudioHub
 {
     public class ListenFragment : Fragment
     {
-        public FloatingActionButton fabPlayPause;
-        public FloatingActionButton fabPrev;
-        public FloatingActionButton fabNext;
-        public FloatingActionButton fabLoop;
-        public FloatingActionButton fabShuffle;
+        private FloatingActionButton fabPlayPause;
+        private FloatingActionButton fabPrev;
+        private FloatingActionButton fabNext;
+        private FloatingActionButton fabLoop;
+        private FloatingActionButton fabShuffle;
 
-        public Slider elapsedSlider;
-        public TextView tvElapsedDuration;
-        public TextView tvFullDuration;
+        private Slider elapsedSlider;
+        private TextView tvElapsedDuration;
+        private TextView tvFullDuration;
 
-        public TextView tvSongPlaylist;
-        public ImageView imgSongThumbnail;
-        public TextView tvSongTitle;
-        public TextView tvSongArtist;
+        private TextView tvSongPlaylist;
+        private ImageView imgSongThumbnail;
+        private TextView tvSongTitle;
+        private TextView tvSongArtist;
 
-        public BottomAppBar babTopAppBar;
+        private BottomAppBar babTopAppBar;
 
-        public ProgressBar progressBar;
-        public Progress<double> downloadProgress;
+        private ProgressBar progressBar;
+        private Progress<double> downloadProgress;
 
-        public Handler songTimer;
-        public float lastSliderVal;
+        private Handler songTimer;
+        private float lastSliderVal;
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -127,6 +126,12 @@ namespace AudioHub
             {
                 fabPlayPause.SetImageDrawable(MainActivity.activity.GetDrawable(Resource.Drawable.round_pause_24));
                 songTimer.PostDelayed(TimerUpdate, 1000);
+            };
+
+            fabPlayPause.Click += (s, e) =>
+            {
+                if (SongPlayer.mediaPlayer.IsPlaying) SongPlayer.Pause();
+                else SongPlayer.Resume();
             };
 
             fabNext.Click += (s, e) => SongPlayer.PlayNextSong();

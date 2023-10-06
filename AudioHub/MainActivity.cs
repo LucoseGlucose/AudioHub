@@ -21,8 +21,6 @@ using YoutubeReExplode.Playlists;
 using System.IO;
 using Android.Content.Res;
 using System;
-using Android.Support.V4.Media;
-using Android.Support.V4.Media.Session;
 
 namespace AudioHub
 {
@@ -39,9 +37,6 @@ namespace AudioHub
         private int currentPage;
         private BottomNavigationView bNavView;
         public Random shuffleSeed = new Random();
-
-        public MediaBrowserCompat mediaBrowser;
-        public MediaBrowserCallback mbCallback;
 
         public static MainActivity activity;
 
@@ -70,15 +65,6 @@ namespace AudioHub
             SongManager.ClearCachedSongs();
 
             SongPlayer.Init();
-
-            mbCallback = new MediaBrowserCallback(fragments[Resource.Id.navigation_listen] as ListenFragment);
-            mediaBrowser = new MediaBrowserCompat(this, new ComponentName(this,
-                Java.Lang.Class.ForName(typeof(MusicService).FullName)), mbCallback, null);
-        }
-        protected override void OnStart()
-        {
-            base.OnStart();
-            mediaBrowser.Connect();
         }
         protected override void OnDestroy()
         {
