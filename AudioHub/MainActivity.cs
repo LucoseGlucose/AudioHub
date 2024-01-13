@@ -64,16 +64,18 @@ namespace AudioHub
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
 
-            SongPlayer.Init();
+            NotificationChannel nChannel = new NotificationChannel("Running", "Running", NotificationImportance.Low);
+            (GetSystemService(NotificationService) as NotificationManager).CreateNotificationChannel(nChannel);
+            StartForegroundService(new Intent(this, typeof(SongPlayer)));
         }
         protected override void OnDestroy()
         {
             base.OnDestroy();
 
+            StopService(new Intent(activity, typeof(SongPlayer)));
+
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
-
-            SongPlayer.Cleanup();
         }
         private void BNavView_ItemSelected(object sender, NavigationBarView.ItemSelectedEventArgs e)
         {
