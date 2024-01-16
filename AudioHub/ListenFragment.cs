@@ -153,6 +153,8 @@ namespace AudioHub
         }
         private void TimerUpdate()
         {
+            if (SongPlayer.mediaPlayer == null) return;
+
             int secs = (int)Math.Floor((float)SongPlayer.mediaPlayer.CurrentPosition / 1000);
             tvElapsedDuration.Text = Song.GetDurationString(secs);
 

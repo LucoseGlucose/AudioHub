@@ -65,10 +65,14 @@ namespace AudioHub
             SongManager.ClearCachedSongs();
 
             SongPlayer.Init();
+
+            StartForegroundService(new Intent(this, typeof(NextSongService)));
         }
         protected override void OnDestroy()
         {
             base.OnDestroy();
+
+            StopService(new Intent(this, typeof(NextSongService)));
 
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
