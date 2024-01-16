@@ -14,7 +14,6 @@ using Google.Android.Material.BottomAppBar;
 using Google.Android.Material.Slider;
 using Android.Graphics.Drawables;
 using YoutubeReExplode.Playlists;
-using System.IO;
 
 namespace AudioHub
 {
@@ -42,7 +41,6 @@ namespace AudioHub
 
         private Handler songTimer;
         private float lastSliderVal;
-        private int lastSecs;
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -65,7 +63,7 @@ namespace AudioHub
             tvElapsedDuration = view.FindViewById<TextView>(Resource.Id.tvElapsedDuration);
             tvFullDuration = view.FindViewById<TextView>(Resource.Id.tvFullDuration);
 
-            tvElapsedDuration.Text = Song.GetDurationString(0);
+            tvElapsedDuration.Text = Song.GetDurationString((int)Math.Floor((float)SongPlayer.mediaPlayer.CurrentPosition / 1000));
             tvFullDuration.Text = Song.GetDurationString(SongPlayer.currentSong.durationSecs);
 
             babTopAppBar = view.FindViewById<BottomAppBar>(Resource.Id.babTopAppBar);
@@ -155,24 +153,21 @@ namespace AudioHub
         }
         private void TimerUpdate()
         {
-            if (SongPlayer.mediaPlayer == null) return;
-
             int secs = (int)Math.Floor((float)SongPlayer.mediaPlayer.CurrentPosition / 1000);
             tvElapsedDuration.Text = Song.GetDurationString(secs);
 
-            if (elapsedSlider.Value != lastSliderVal && !string.IsNullOrEmpty(SongPlayer.currentSong.id))
+            if (elapsedSlider.Value != lastSliderVal && lastSliderVal != 0f)
             {
                 lastSliderVal = elapsedSlider.Value;
                 SongPlayer.Seek((int)Math.Floor(elapsedSlider.Value * SongPlayer.currentSong.durationSecs));
             }
-            else if (lastSecs != secs)
+            else
             {
                 elapsedSlider.Value = (float)secs / SongPlayer.currentSong.durationSecs;
                 lastSliderVal = elapsedSlider.Value;
-                lastSecs = secs;
             }
 
-            songTimer.PostDelayed(TimerUpdate, 250);
+            songTimer.PostDelayed(TimerUpdate, 1000);
         }
     }
 }

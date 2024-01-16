@@ -128,9 +128,5 @@ namespace AudioHub
         {
             return File.Exists($"{PlaylistDirectory}/{playlist}/{songId}.song");
         }
-        public static Playlist GetPlaylistByTitle(string title)
-        {
-            return new Playlist(title, GetSongIDsInPlaylist(title));
-        }
     }
 }

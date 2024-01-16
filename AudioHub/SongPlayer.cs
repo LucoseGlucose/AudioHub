@@ -1,68 +1,41 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.Content.PM;
 using Android.Media;
 using Android.OS;
 using Android.Runtime;
-using Android.Util;
 using Android.Views;
 using Android.Widget;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace AudioHub
 {
-    [Service(ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
-    public class SongPlayer : Service
+    public static class SongPlayer
     {
+        public static MediaPlayer mediaPlayer { get; private set; }
+        public static Song currentSong { get; private set; }
+        public static Playlist currentPlaylist { get; private set; }
+        public static List<Song> currentSongs { get; private set; }
+        public static int currentSongIndex { get; private set; }
+
         public static bool loop;
         public static bool shuffle;
-
-        public static MediaPlayer mediaPlayer;
-        public static Song currentSong;
-        public static Playlist currentPlaylist;
-        public static List<Song> currentSongs;
-        public static int currentSongIndex;
 
         public static event Action<Song, Playlist> OnPlay;
         public static event Action OnResume;
         public static event Action OnPause;
         public static event Action<int> OnSeek;
 
-        public static SongPlayer Instance { get; private set; }
-
-        public override IBinder OnBind(Intent intent)
+        public static void Init()
         {
-            return null;
-        }
-        public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
-        {
-            Instance = this;
-
             mediaPlayer = new MediaPlayer();
             mediaPlayer.Completion += (s, e) => PlayNextSong();
-
-            UpdateNotification();
-            return StartCommandResult.Sticky;
         }
-        public override void OnDestroy()
+        public static void Cleanup()
         {
             mediaPlayer.Release();
-            mediaPlayer = null;
-            StopSelf();
-        }
-        private void UpdateNotification()
-        {
-            Notification.Builder builder = new Notification.Builder(this, "Running")
-                .SetContentTitle("MusicService is running")
-                .SetContentIntent(PendingIntent.GetActivity(MainActivity.activity, 1,
-                new Intent(MainActivity.activity, typeof(MainActivity)), PendingIntentFlags.UpdateCurrent))
-                .SetSmallIcon(Resource.Drawable.round_headphones_24);
-
-            StartForeground(2, builder.Build(), ForegroundService.TypeMediaPlayback);
         }
         public static void Play(Song song, Playlist playlist)
         {
@@ -108,8 +81,6 @@ namespace AudioHub
             shuffle = !shuffle;
             if (shuffle) ShuffleList(currentSongs);
             else currentSongs = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title).ToList();
-
-            currentSongIndex = currentSongs.IndexOf(currentSong);
         }
         public static void ShuffleList<T>(IList<T> list)
         {

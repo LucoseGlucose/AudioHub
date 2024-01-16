@@ -60,8 +60,6 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BTConnectionBR.cs" />
-    <Compile Include="MusicService.cs" />
     <Compile Include="OnEditorActionListener.cs" />
     <Compile Include="OnClickListener.cs" />
     <Compile Include="Playlist.cs" />
