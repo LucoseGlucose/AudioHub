@@ -42,6 +42,7 @@ namespace AudioHub
 
         protected override async void OnCreate(Bundle savedInstanceState)
         {
+            if (activity != null) return;
             activity = this;
 
             base.OnCreate(savedInstanceState);
@@ -65,7 +66,6 @@ namespace AudioHub
             SongManager.ClearCachedSongs();
 
             SongPlayer.Init();
-
             StartForegroundService(new Intent(this, typeof(NextSongService)));
         }
         protected override void OnDestroy()
@@ -100,7 +100,7 @@ namespace AudioHub
             currentPage = newPage;
             bNavView.SelectedItemId = newPage;
         }
-        public static void ShowDialog(int layoutResID, Stack<Dialog> stack, System.Action<Dialog, View> bindViewAction)
+        public static void ShowDialog(int layoutResID, Stack<Dialog> stack, Action<Dialog, View> bindViewAction)
         {
             Dialog dialog = new Dialog(activity, Resource.Style.AppTheme);
             stack?.Push(dialog);

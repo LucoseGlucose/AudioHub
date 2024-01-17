@@ -98,7 +98,7 @@ namespace AudioHub
             fabShuffle.SetImageDrawable(MainActivity.activity.GetDrawable(
                 SongPlayer.shuffle ? Resource.Drawable.round_shuffle_on_24 : Resource.Drawable.round_shuffle_24));
 
-            SongPlayer.OnPlay += async (song, playlist) =>
+            SongPlayer.onPlay += async (song, playlist) =>
             {
                 fabPlayPause.SetImageDrawable(MainActivity.activity.GetDrawable(Resource.Drawable.round_pause_24));
 
@@ -116,13 +116,13 @@ namespace AudioHub
                 songTimer.Post(TimerUpdate);
             };
 
-            SongPlayer.OnPause += () =>
+            SongPlayer.onPause += () =>
             {
                 fabPlayPause.SetImageDrawable(MainActivity.activity.GetDrawable(Resource.Drawable.round_play_arrow_24));
                 songTimer.RemoveCallbacks(TimerUpdate);
             };
 
-            SongPlayer.OnResume += () =>
+            SongPlayer.onResume += () =>
             {
                 fabPlayPause.SetImageDrawable(MainActivity.activity.GetDrawable(Resource.Drawable.round_pause_24));
                 songTimer.PostDelayed(TimerUpdate, 1000);

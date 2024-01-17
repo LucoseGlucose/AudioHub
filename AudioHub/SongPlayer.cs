@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Media;
+using Android.Media.Session;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
@@ -12,38 +13,44 @@ using System.Text;
 
 namespace AudioHub
 {
-    public static class SongPlayer
+    public class SongPlayer : MediaSession.Callback
     {
         public static MediaPlayer mediaPlayer { get; private set; }
         public static Song currentSong { get; private set; }
         public static Playlist currentPlaylist { get; private set; }
         public static List<Song> currentSongs { get; private set; }
         public static int currentSongIndex { get; private set; }
+        public static MediaSession mediaSession { get; private set; }
 
+        public static AudioFocusListener audioFocusListener;
         public static bool loop;
         public static bool shuffle;
 
-        public static event Action<Song, Playlist> OnPlay;
-        public static event Action OnResume;
-        public static event Action OnPause;
-        public static event Action<int> OnSeek;
+        public static event Action<Song, Playlist> onPlay;
+        public static event Action onResume;
+        public static event Action onPause;
+        public static event Action<int> onSeek;
 
         public static void Init()
         {
             mediaPlayer = new MediaPlayer();
-            mediaPlayer.Completion += (s, e) => PlayNextSong();
+            audioFocusListener = new AudioFocusListener();
+
+            mediaSession = new MediaSession(MainActivity.activity, "AudioHub");
+            mediaSession.SetCallback(new SongPlayer());
+            mediaSession.SetFlags(MediaSessionFlags.HandlesMediaButtons | MediaSessionFlags.HandlesTransportControls);
         }
         public static void Cleanup()
         {
             mediaPlayer.Release();
+            mediaPlayer = null;
         }
         public static void Play(Song song, Playlist playlist)
         {
             if (string.IsNullOrWhiteSpace(song.id)) return;
-            currentSongs ??= PlaylistManager.GetSongsInPlaylist(playlist.title).ToList();
 
-            if (currentSongs.Count > 1) currentSongIndex = currentSongs.IndexOf(song);
-            else currentSongIndex = 0;
+            currentSongs ??= PlaylistManager.GetSongsInPlaylist(playlist.title).ToList();
+            currentSongIndex = currentSongs.IndexOf(song);
 
             if (song.id != currentSong.id || playlist.title != currentPlaylist.title)
             {
@@ -59,28 +66,32 @@ namespace AudioHub
             mediaPlayer.Prepare();
             mediaPlayer.Start();
 
-            OnPlay?.Invoke(song, playlist);
+            mediaSession.Active = true;
+            onPlay?.Invoke(song, playlist);
         }
         public static void Pause()
         {
             mediaPlayer.Pause();
-            OnPause?.Invoke();
+            onPause?.Invoke();
         }
         public static void Resume()
         {
+            mediaSession.Active = true;
             mediaPlayer.Start();
-            OnResume?.Invoke();
+            onResume?.Invoke();
         }
         public static void Seek(int secs)
         {
             mediaPlayer.SeekTo(secs * 1000);
-            OnSeek?.Invoke(secs);
+            onSeek?.Invoke(secs);
         }
         public static void ToggleShuffle()
         {
             shuffle = !shuffle;
             if (shuffle) ShuffleList(currentSongs);
             else currentSongs = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title).ToList();
+
+            currentSongIndex = currentSongs.IndexOf(currentSong);
         }
         public static void ShuffleList<T>(IList<T> list)
         {
@@ -115,6 +126,43 @@ namespace AudioHub
             if (next >= currentSongs.Count) next = 0;
 
             return currentSongs[next];
+        }
+        public static void RequestAudioFocus()
+        {
+            AudioFocusRequestClass focusRequest = new AudioFocusRequestClass.Builder(AudioFocus.Gain)
+                .SetAudioAttributes(new AudioAttributes.Builder().SetContentType(AudioContentType.Music).Build())
+                .SetOnAudioFocusChangeListener(audioFocusListener).Build();
+
+            AudioManager audioManager = (AudioManager)MainActivity.activity.GetSystemService(Context.AudioService);
+            audioManager.RequestAudioFocus(focusRequest);
+        }
+        public override void OnPlay()
+        {
+            Resume();
+        }
+        public override void OnPlayFromMediaId(string mediaId, Bundle extras)
+        {
+            Play(SongManager.GetSongById(mediaId), PlaylistManager.GetPlaylistByTitle(extras.GetString("Playlist")));
+        }
+        public override void OnPause()
+        {
+            Pause();
+        }
+        public override void OnSeekTo(long pos)
+        {
+            Seek((int)pos);
+        }
+        public override void OnSkipToNext()
+        {
+            PlayNextSong();
+        }
+        public override void OnSkipToPrevious()
+        {
+            PlayPreviousSong();
+        }
+        public override void OnStop()
+        {
+            Pause();
         }
     }
 }
