@@ -78,7 +78,7 @@ namespace AudioHub
                 $"{SongManager.GetSongDirectory(currentSong.id)}/Thumbnail.jpg"
                 : $"{SongManager.SongCacheDirectory}/{currentSong.id}/Thumbnail.jpg";
 
-            metadataBuilder.PutString(MediaMetadata.MetadataKeyAlbumArtUri, thumbnailPath);
+            metadataBuilder.PutBitmap(MediaMetadata.MetadataKeyAlbumArt, BitmapFactory.DecodeFile(thumbnailPath));
             mediaSession.SetMetadata(metadataBuilder.Build());
 
             MainActivity.UpdateService();
@@ -95,6 +95,8 @@ namespace AudioHub
             mediaPlayer.Pause();
             UpdatePlaybackState();
             onPause?.Invoke();
+
+            MainActivity.UpdateService();
         }
         public static void Resume()
         {
@@ -102,6 +104,8 @@ namespace AudioHub
             mediaSession.Active = true;
             mediaPlayer.Start();
             onResume?.Invoke();
+
+            MainActivity.UpdateService();
         }
         public static void Seek(int secs)
         {
@@ -165,6 +169,9 @@ namespace AudioHub
             PlaybackState.Builder builder = new PlaybackState.Builder();
             builder.SetState(mediaPlayer.IsPlaying ? PlaybackStateCode.Playing : PlaybackStateCode.Paused,
                 long.Parse(mediaPlayer.CurrentPosition.ToString()), 1f);
+
+            builder.SetActions((mediaPlayer.IsPlaying ? PlaybackState.ActionPause : PlaybackState.ActionPlay) |
+                PlaybackState.ActionSeekTo | PlaybackState.ActionSkipToNext | PlaybackState.ActionSkipToPrevious);
             mediaSession.SetPlaybackState(builder.Build());
         }
         public override void OnPlay()
@@ -181,7 +188,7 @@ namespace AudioHub
         }
         public override void OnSeekTo(long pos)
         {
-            Seek((int)pos);
+            Seek((int)Math.Floor(pos / 1000f));
         }
         public override void OnSkipToNext()
         {

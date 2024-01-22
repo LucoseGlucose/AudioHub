@@ -17,9 +17,12 @@ namespace AudioHub
         public override void OnReceive(Context context, Intent intent)
         {
             if (intent.Action != Intent.ActionMediaButton || !intent.HasExtra(Intent.ExtraKeyEvent)) return;
+            string action = intent.GetStringExtra(Intent.ExtraKeyEvent);
 
-            KeyEvent ke = (KeyEvent)intent.GetParcelableExtra(Intent.ExtraKeyEvent, Java.Lang.Class.FromType(typeof(KeyEvent)));
-            SongPlayer.mediaSession.Controller.DispatchMediaButtonEvent(ke);
+            if (action == "Previous") SongPlayer.PlayPreviousSong();
+            if (action == "Resume") SongPlayer.Resume();
+            if (action == "Pause") SongPlayer.Pause();
+            if (action == "Next") SongPlayer.PlayNextSong();
         }
     }
 }
