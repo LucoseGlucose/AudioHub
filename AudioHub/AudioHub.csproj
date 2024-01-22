@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioFocusListener.cs" />
+    <Compile Include="MediaButtonReciever.cs" />
     <Compile Include="NextSongService.cs" />
     <Compile Include="OnEditorActionListener.cs" />
     <Compile Include="OnClickListener.cs" />

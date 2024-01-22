@@ -42,7 +42,6 @@ namespace AudioHub
 
         protected override async void OnCreate(Bundle savedInstanceState)
         {
-            if (activity != null) return;
             activity = this;
 
             base.OnCreate(savedInstanceState);
@@ -66,7 +65,6 @@ namespace AudioHub
             SongManager.ClearCachedSongs();
 
             SongPlayer.Init();
-            StartForegroundService(new Intent(this, typeof(NextSongService)));
         }
         protected override void OnDestroy()
         {
@@ -77,6 +75,7 @@ namespace AudioHub
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
 
+            NextSongService.initialized = false;
             SongPlayer.Cleanup();
         }
         private void BNavView_ItemSelected(object sender, NavigationBarView.ItemSelectedEventArgs e)
@@ -119,6 +118,10 @@ namespace AudioHub
         public static void VerifyDirectory(string directory)
         {
             if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+        }
+        public static void UpdateService()
+        {
+            activity.StartForegroundService(new Intent(activity, typeof(NextSongService)));
         }
     }
 }

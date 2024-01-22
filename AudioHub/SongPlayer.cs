@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Graphics;
 using Android.Media;
 using Android.Media.Session;
 using Android.OS;
@@ -44,6 +45,11 @@ namespace AudioHub
         {
             mediaPlayer.Release();
             mediaPlayer = null;
+
+            currentSong = default;
+            currentPlaylist = default;
+            currentSongs = null;
+            currentSongIndex = 0;
         }
         public static void Play(Song song, Playlist playlist)
         {
@@ -63,25 +69,43 @@ namespace AudioHub
             }
             else mediaPlayer.Stop();
 
+            MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder();
+            metadataBuilder.PutString(MediaMetadata.MetadataKeyTitle, song.title);
+            metadataBuilder.PutString(MediaMetadata.MetadataKeyArtist, song.artist);
+            metadataBuilder.PutLong(MediaMetadata.MetadataKeyDuration, song.durationSecs * 1000);
+
+            string thumbnailPath = SongManager.IsSongDownloaded(currentSong.id) ?
+                $"{SongManager.GetSongDirectory(currentSong.id)}/Thumbnail.jpg"
+                : $"{SongManager.SongCacheDirectory}/{currentSong.id}/Thumbnail.jpg";
+
+            metadataBuilder.PutString(MediaMetadata.MetadataKeyAlbumArtUri, thumbnailPath);
+            mediaSession.SetMetadata(metadataBuilder.Build());
+
+            MainActivity.UpdateService();
+
             mediaPlayer.Prepare();
             mediaPlayer.Start();
 
+            UpdatePlaybackState();
             mediaSession.Active = true;
             onPlay?.Invoke(song, playlist);
         }
         public static void Pause()
         {
             mediaPlayer.Pause();
+            UpdatePlaybackState();
             onPause?.Invoke();
         }
         public static void Resume()
         {
+            UpdatePlaybackState();
             mediaSession.Active = true;
             mediaPlayer.Start();
             onResume?.Invoke();
         }
         public static void Seek(int secs)
         {
+            UpdatePlaybackState();
             mediaPlayer.SeekTo(secs * 1000);
             onSeek?.Invoke(secs);
         }
@@ -135,6 +159,13 @@ namespace AudioHub
 
             AudioManager audioManager = (AudioManager)MainActivity.activity.GetSystemService(Context.AudioService);
             audioManager.RequestAudioFocus(focusRequest);
+        }
+        public static void UpdatePlaybackState()
+        {
+            PlaybackState.Builder builder = new PlaybackState.Builder();
+            builder.SetState(mediaPlayer.IsPlaying ? PlaybackStateCode.Playing : PlaybackStateCode.Paused,
+                long.Parse(mediaPlayer.CurrentPosition.ToString()), 1f);
+            mediaSession.SetPlaybackState(builder.Build());
         }
         public override void OnPlay()
         {

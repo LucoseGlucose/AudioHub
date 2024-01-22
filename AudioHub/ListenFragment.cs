@@ -169,6 +169,7 @@ namespace AudioHub
                 lastSliderVal = elapsedSlider.Value;
             }
 
+            SongPlayer.UpdatePlaybackState();
             songTimer.PostDelayed(TimerUpdate, 1000);
         }
     }

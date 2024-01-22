@@ -15,13 +15,19 @@ namespace AudioHub
     [Service(ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
     public class NextSongService : Service
     {
+        public static bool initialized;
+
         public override IBinder OnBind(Intent intent)
         {
             return null;
         }
         public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
         {
-            SongPlayer.mediaPlayer.Completion += (s, e) => SongPlayer.PlayNextSong();
+            if (!initialized)
+            {
+                SongPlayer.mediaPlayer.Completion += (s, e) => SongPlayer.PlayNextSong();
+                initialized = true;
+            }
 
             Intent resumeIntent = new Intent(MainActivity.activity, typeof(MainActivity));
             PendingIntent pendingIntent =
@@ -31,10 +37,7 @@ namespace AudioHub
             mediaStyle.SetMediaSession(SongPlayer.mediaSession.SessionToken);
 
             Notification.Builder builder = new Notification.Builder(this, "Running");
-            builder.SetContentTitle("MusicService is running");
-            builder.SetContentText("Running");
             builder.SetSmallIcon(Resource.Drawable.round_headphones_24);
-            builder.SetContentIntent(pendingIntent);
             builder.SetStyle(mediaStyle);
 
             StartForeground(2, builder.Build(), ForegroundService.TypeMediaPlayback);
