@@ -50,6 +50,7 @@ namespace AudioHub
 
             Notification.Builder builder = new Notification.Builder(this, "Running");
             builder.SetSmallIcon(Resource.Drawable.round_headphones_24);
+            builder.SetVisibility(NotificationVisibility.Public);
 
             builder.AddAction(new Notification.Action(Resource.Drawable.round_skip_previous_24, "Previous", previousPIntent));
 
