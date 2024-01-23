@@ -81,8 +81,6 @@ namespace AudioHub
             metadataBuilder.PutBitmap(MediaMetadata.MetadataKeyAlbumArt, BitmapFactory.DecodeFile(thumbnailPath));
             mediaSession.SetMetadata(metadataBuilder.Build());
 
-            MainActivity.UpdateService();
-
             mediaPlayer.Prepare();
             mediaPlayer.Start();
 
@@ -93,24 +91,23 @@ namespace AudioHub
         public static void Pause()
         {
             mediaPlayer.Pause();
+
             UpdatePlaybackState();
             onPause?.Invoke();
-
-            MainActivity.UpdateService();
         }
         public static void Resume()
         {
-            UpdatePlaybackState();
             mediaSession.Active = true;
             mediaPlayer.Start();
-            onResume?.Invoke();
 
-            MainActivity.UpdateService();
+            UpdatePlaybackState();
+            onResume?.Invoke();
         }
         public static void Seek(int secs)
         {
-            UpdatePlaybackState();
             mediaPlayer.SeekTo(secs * 1000);
+
+            UpdatePlaybackState();
             onSeek?.Invoke(secs);
         }
         public static void ToggleShuffle()
@@ -167,12 +164,13 @@ namespace AudioHub
         public static void UpdatePlaybackState()
         {
             PlaybackState.Builder builder = new PlaybackState.Builder();
-            builder.SetState(mediaPlayer.IsPlaying ? PlaybackStateCode.Playing : PlaybackStateCode.Paused,
-                long.Parse(mediaPlayer.CurrentPosition.ToString()), 1f);
+            PlaybackStateCode playbackState = mediaPlayer.IsPlaying ? PlaybackStateCode.Playing : PlaybackStateCode.Paused;
 
-            builder.SetActions((mediaPlayer.IsPlaying ? PlaybackState.ActionPause : PlaybackState.ActionPlay) |
-                PlaybackState.ActionSeekTo | PlaybackState.ActionSkipToNext | PlaybackState.ActionSkipToPrevious);
+            builder.SetState(playbackState, long.Parse(mediaPlayer.CurrentPosition.ToString()), 1f);
+            builder.SetActions(PlaybackState.ActionSeekTo);
+
             mediaSession.SetPlaybackState(builder.Build());
+            MainActivity.UpdateService();
         }
         public override void OnPlay()
         {

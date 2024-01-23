@@ -29,9 +29,6 @@ namespace AudioHub
                 initialized = true;
             }
 
-            Intent reopenIntent = new Intent(this, typeof(MainActivity));
-            PendingIntent reopenPIntent = PendingIntent.GetBroadcast(this, 1, reopenIntent, PendingIntentFlags.UpdateCurrent);
-
             Intent previousIntent = new Intent(this, typeof(MediaButtonReciever))
                 .SetAction(Intent.ActionMediaButton).PutExtra(Intent.ExtraKeyEvent, "Previous");
             PendingIntent previousPIntent = PendingIntent.GetBroadcast(this, 2, previousIntent, PendingIntentFlags.UpdateCurrent);
@@ -53,7 +50,6 @@ namespace AudioHub
 
             Notification.Builder builder = new Notification.Builder(this, "Running");
             builder.SetSmallIcon(Resource.Drawable.round_headphones_24);
-            builder.SetContentIntent(reopenPIntent);
 
             builder.AddAction(new Notification.Action(Resource.Drawable.round_skip_previous_24, "Previous", previousPIntent));
 
