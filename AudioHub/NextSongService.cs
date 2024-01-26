@@ -15,7 +15,7 @@ namespace AudioHub
     [Service(ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
     public class NextSongService : Service
     {
-        public static bool initialized;
+        public static bool initialized = false;
 
         public override IBinder OnBind(Intent intent)
         {

@@ -34,6 +34,14 @@ namespace AudioHub
 
         public static void Init()
         {
+            loop = false;
+            shuffle = false;
+
+            currentSong = default;
+            currentPlaylist = default;
+            currentSongs = null;
+            currentSongIndex = 0;
+
             mediaPlayer = new MediaPlayer();
             audioFocusListener = new AudioFocusListener();
 
@@ -46,10 +54,8 @@ namespace AudioHub
             mediaPlayer.Release();
             mediaPlayer = null;
 
-            currentSong = default;
-            currentPlaylist = default;
-            currentSongs = null;
-            currentSongIndex = 0;
+            mediaSession.Release();
+            mediaSession = null;
         }
         public static void Play(Song song, Playlist playlist)
         {
