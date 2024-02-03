@@ -14,7 +14,7 @@ namespace AudioHub
 {
 	
 	
-	[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Xamarin.Android.Build.Tasks", "13.2.1.111")]
+	[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Xamarin.Android.Build.Tasks", "13.2.2.120")]
 	public partial class Resource
 	{
 		
@@ -11014,19 +11014,19 @@ namespace AudioHub
 			public const int top = 2131231236;
 			
 			// aapt resource value: 0x7F080206
-			public const int topappbar_addToPlaylist = 2131231238;
+			public const int topappbar_addToQueue = 2131231238;
 			
 			// aapt resource value: 0x7F080207
-			public const int topappbar_addToQueue = 2131231239;
+			public const int topappbar_download = 2131231239;
 			
 			// aapt resource value: 0x7F080208
-			public const int topappbar_keepScreenOn = 2131231240;
+			public const int topappbar_readMessages = 2131231240;
 			
 			// aapt resource value: 0x7F080209
-			public const int topappbar_readMessages = 2131231241;
+			public const int topappbar_regenTitles = 2131231241;
 			
 			// aapt resource value: 0x7F08020A
-			public const int topappbar_speakCommand = 2131231242;
+			public const int topappbar_selectPlaylists = 2131231242;
 			
 			// aapt resource value: 0x7F080205
 			public const int topPanel = 2131231237;

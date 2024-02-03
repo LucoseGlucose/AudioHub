@@ -67,6 +67,8 @@ namespace AudioHub
 
             builder.SetStyle(mediaStyle);
             mediaStyle.SetShowActionsInCompactView(0, 1, 2);
+
+            builder.Extras.PutInt("poop", 10);
             StartForeground(2, builder.Build(), ForegroundService.TypeMediaPlayback);
 
             return StartCommandResult.Sticky;

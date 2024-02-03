@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="AudioFocusListener.cs" />
     <Compile Include="MediaButtonReciever.cs" />
+    <Compile Include="MessageListener.cs" />
     <Compile Include="NextSongService.cs" />
     <Compile Include="OnEditorActionListener.cs" />
     <Compile Include="OnClickListener.cs" />
@@ -70,7 +71,6 @@
     <Compile Include="QueueManager.cs" />
     <Compile Include="SongDurationFormatter.cs" />
     <Compile Include="SongManager.cs" />
-    <Compile Include="AudioMaster.cs" />
     <Compile Include="ListenFragment.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
@@ -79,6 +79,7 @@
     <Compile Include="Song.cs" />
     <Compile Include="SongPlayer.cs" />
     <Compile Include="SongsFragment.cs" />
+    <Compile Include="TTSProgressListener.cs" />
     <Compile Include="ViewAdapter.cs" />
   </ItemGroup>
   <ItemGroup>

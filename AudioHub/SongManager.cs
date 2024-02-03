@@ -42,6 +42,18 @@ namespace AudioHub
             return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
                 (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
         }
+        public static Song GetUpdatedSong(Song song)
+        {
+            return new Song
+            {
+                id = song.id,
+                durationSecs = song.durationSecs,
+                artist = Song.GetSimpleArtist(song.fullTitle, song.fullArtist),
+                title = Song.GetSimpleTitle(song.fullTitle),
+                fullArtist = song.fullArtist,
+                fullTitle = song.fullTitle,
+            };
+        }
         public static async Task<Song> GetSongFromVideo(VideoId videoId)
         {
             return GetSongFromVideo(await ytClient.Value.Videos.GetAsync(videoId));
@@ -99,13 +111,36 @@ namespace AudioHub
             await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
             DownloadThumbnail(video, directory);
 
+            WriteSongData(directory, song);
+
+            return song;
+        }
+        public static async Task<Song> DownloadCachedSong(Song song, Progress<double> progress, CancellationToken cancellationToken)
+        {
+            string directory = GetSongDirectory(song.id);
+
+            if (Directory.Exists(directory)) return song;
+            Directory.CreateDirectory(directory);
+
+            StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(song.id);
+            IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+            await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
+            File.Copy($"{ThumbnailCacheDirectory}/{song.id}.jpg", $"{directory}/Thumbnail.jpg");
+
+            WriteSongData(directory, song);
+
+            return song;
+        }
+        public static void WriteSongData(string directory, Song song)
+        {
+            File.Delete($"{directory}/SongData.xml");
+
             XmlWriter writer = XmlWriter.Create($"{directory}/SongData.xml", new XmlWriterSettings() {
                 WriteEndDocumentOnClose = true, CloseOutput = true, Indent = true });
 
             XmlSerializer serializer = new XmlSerializer(typeof(Song));
             serializer.Serialize(writer, song);
-
-            return song;
         }
         public static string GetSongDirectory(string id)
         {

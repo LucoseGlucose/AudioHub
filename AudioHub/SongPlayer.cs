@@ -24,6 +24,8 @@ namespace AudioHub
         public static MediaSession mediaSession { get; private set; }
 
         public static AudioFocusListener audioFocusListener;
+        public static AudioFocusRequestClass audioFocusRequest;
+
         public static bool loop;
         public static bool shuffle;
 
@@ -44,6 +46,10 @@ namespace AudioHub
 
             mediaPlayer = new MediaPlayer();
             audioFocusListener = new AudioFocusListener();
+
+            audioFocusRequest = new AudioFocusRequestClass.Builder(AudioFocus.Gain)
+                .SetAudioAttributes(new AudioAttributes.Builder().SetContentType(AudioContentType.Music).Build())
+                .SetOnAudioFocusChangeListener(audioFocusListener).Build();
 
             mediaSession = new MediaSession(MainActivity.activity, "AudioHub");
             mediaSession.SetCallback(new SongPlayer());
@@ -75,6 +81,8 @@ namespace AudioHub
             }
             else mediaPlayer.Stop();
 
+            ((AudioManager)MainActivity.activity.GetSystemService(Context.AudioService)).RequestAudioFocus(audioFocusRequest);
+
             MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder();
             metadataBuilder.PutString(MediaMetadata.MetadataKeyTitle, song.title);
             metadataBuilder.PutString(MediaMetadata.MetadataKeyArtist, song.artist);
@@ -103,6 +111,8 @@ namespace AudioHub
         }
         public static void Resume()
         {
+            ((AudioManager)MainActivity.activity.GetSystemService(Context.AudioService)).RequestAudioFocus(audioFocusRequest);
+
             mediaSession.Active = true;
             mediaPlayer.Start();
 
@@ -157,15 +167,6 @@ namespace AudioHub
             if (next >= currentSongs.Count) next = 0;
 
             return currentSongs[next];
-        }
-        public static void RequestAudioFocus()
-        {
-            AudioFocusRequestClass focusRequest = new AudioFocusRequestClass.Builder(AudioFocus.Gain)
-                .SetAudioAttributes(new AudioAttributes.Builder().SetContentType(AudioContentType.Music).Build())
-                .SetOnAudioFocusChangeListener(audioFocusListener).Build();
-
-            AudioManager audioManager = (AudioManager)MainActivity.activity.GetSystemService(Context.AudioService);
-            audioManager.RequestAudioFocus(focusRequest);
         }
         public static void UpdatePlaybackState()
         {

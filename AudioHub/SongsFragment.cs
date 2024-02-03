@@ -103,8 +103,8 @@ namespace AudioHub
         }
         private async void BindSongViewAdapter(RecyclerView.ViewHolder holder, Song song)
         {
-            holder.ItemView.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
-            holder.ItemView.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
+            holder.ItemView.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.fullTitle;
+            holder.ItemView.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.fullArtist;
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
             Drawable thumbnail = await Drawable.CreateFromPathAsync($"{SongManager.ThumbnailCacheDirectory}/{song.id}.jpg");

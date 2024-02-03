@@ -14,6 +14,12 @@ using Google.Android.Material.BottomAppBar;
 using Google.Android.Material.Slider;
 using Android.Graphics.Drawables;
 using YoutubeReExplode.Playlists;
+using AndroidX.RecyclerView.Widget;
+using System.Threading;
+using YoutubeReExplode.Videos.Streams;
+using YoutubeReExplode.Videos;
+using System.IO;
+using Android.Graphics;
 
 namespace AudioHub
 {
@@ -42,6 +48,10 @@ namespace AudioHub
         private Handler songTimer;
         private float lastSliderVal;
 
+        private Song currentSong;
+        private readonly Dictionary<Playlist, bool> playlistSelections = new Dictionary<Playlist, bool>();
+        private ViewAdapter<Playlist> selectPlaylistVA;
+
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             return inflater.Inflate(Resource.Layout.fragment_listen, container, false);
@@ -66,8 +76,47 @@ namespace AudioHub
             tvElapsedDuration.Text = Song.GetDurationString((int)Math.Floor((float)SongPlayer.mediaPlayer.CurrentPosition / 1000));
             tvFullDuration.Text = Song.GetDurationString(SongPlayer.currentSong.durationSecs);
 
+            selectPlaylistVA = new ViewAdapter<Playlist>(PlaylistManager.GetPlaylists(),
+                Resource.Layout.item_playlist_select, BindSelectPlaylistViewAdapter);
+
             babTopAppBar = view.FindViewById<BottomAppBar>(Resource.Id.babTopAppBar);
             babTopAppBar.SetNavigationOnClickListener(new OnClickListener(v => MainActivity.activity.FinishAndRemoveTask()));
+            babTopAppBar.MenuItemClick += async (s, e) =>
+            {
+                if (e.Item.ItemId == Resource.Id.topappbar_regenTitles)
+                {
+                    SongPlayer.Pause();
+
+                    foreach (string songId in PlaylistManager.GetDownloadedSongsPlaylist().songs)
+                    {
+                        Song song = SongManager.GetSongById(songId);
+                        SongManager.WriteSongData(SongManager.GetSongDirectory(songId), SongManager.GetUpdatedSong(song));
+                    }
+
+                    SongPlayer.Resume();
+                }
+                if (e.Item.ItemId == Resource.Id.topappbar_readMessages)
+                {
+                    MessageListener.readMessages = !MessageListener.readMessages;
+                    e.Item.Icon.SetTint(Context.GetColor(MessageListener.readMessages ?
+                        Resource.Color.m3_sys_color_dark_primary : Resource.Color.m3_sys_color_dark_on_surface));
+                }
+
+                if (string.IsNullOrEmpty(SongPlayer.currentSong.id)) return;
+
+                if (e.Item.ItemId == Resource.Id.topappbar_selectPlaylists)
+                {
+                    ShowSelectPlaylistsDialog(SongPlayer.currentSong, imgSongThumbnail.Drawable);
+                }
+                if (e.Item.ItemId == Resource.Id.topappbar_addToQueue)
+                {
+                    QueueManager.songs.AddLast(SongPlayer.currentSong);
+                }
+                if (e.Item.ItemId == Resource.Id.topappbar_download)
+                {
+                    await SongManager.DownloadCachedSong(SongPlayer.currentSong, downloadProgress, default);
+                }
+            };
 
             progressBar = view.FindViewById<ProgressBar>(Resource.Id.lpiProgress);
             downloadProgress = new Progress<double>(progress =>
@@ -170,6 +219,73 @@ namespace AudioHub
             }
 
             songTimer.PostDelayed(TimerUpdate, 1000);
+        }
+        private void ShowSelectPlaylistsDialog(Song song, Drawable thumbnail)
+        {
+            MainActivity.ShowDialog(Resource.Layout.dialog_selectPlaylists, null, (dialog, view) =>
+            {
+                view.FindViewById<ImageView>(Resource.Id.imgThumbnail).SetImageDrawable(thumbnail);
+                view.FindViewById<TextView>(Resource.Id.tvTitle).Text = song.title;
+                view.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
+                view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
+
+                RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvPlaylistSelection);
+                rv.SetAdapter(selectPlaylistVA);
+                rv.SetLayoutManager(new LinearLayoutManager(view.Context));
+
+                view.FindViewById<Button>(Resource.Id.btnConfirm).Click += async (s, e) =>
+                {
+                    if (playlistSelections.Count < 1)
+                    {
+                        dialog.Dismiss();
+                        return;
+                    }
+
+                    foreach (KeyValuePair<Playlist, bool> playslistSelection in playlistSelections)
+                    {
+                        if (SongManager.IsSongDownloaded(song.id))
+                        {
+                            bool inPlaylist = PlaylistManager.IsSongInPlaylist(playslistSelection.Key.title, song.id);
+
+                            if (inPlaylist != playslistSelection.Value)
+                            {
+                                if (playslistSelection.Value) PlaylistManager.AddSongToPlaylist(playslistSelection.Key.title, song.id);
+                                else PlaylistManager.RemoveSongFromPlaylist(playslistSelection.Key.title, song.id);
+                            }
+
+                            dialog.Dismiss();
+                        }
+                        else if (playslistSelection.Value)
+                        {
+                            dialog.Dismiss();
+
+                            progressBar.Indeterminate = false;
+                            progressBar.SetProgress(0, true);
+
+                            await SongManager.DownloadSong(song.id, downloadProgress, default);
+                            PlaylistManager.AddSongToPlaylist(playslistSelection.Key.title, song.id);
+                        }
+                    }
+                };
+                view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+
+                currentSong = song;
+                playlistSelections.Clear();
+            });
+        }
+        private void BindSelectPlaylistViewAdapter(RecyclerView.ViewHolder holder, Playlist playlist)
+        {
+            holder.ItemView.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
+            holder.ItemView.FindViewById<TextView>(Resource.Id.tvCount).Text
+                = ManageFragment.GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(playlist.title)?.Length);
+
+            bool inPlaylist = PlaylistManager.IsSongInPlaylist(playlist.title, currentSong.id);
+            playlistSelections.Add(playlist, inPlaylist);
+
+            CheckBox checkBox = holder.ItemView.FindViewById<CheckBox>(Resource.Id.cbSelect);
+            checkBox.Checked = inPlaylist;
+
+            checkBox.CheckedChange += (s, e) => playlistSelections[playlist] = e.IsChecked;
         }
     }
 }

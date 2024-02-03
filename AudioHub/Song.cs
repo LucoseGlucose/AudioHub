@@ -59,12 +59,13 @@ namespace AudioHub
             int startI = str.IndexOf(start);
             int endI = str.IndexOf(end);
 
+            if (str.Substring(startI, endI - startI).ToLower().Contains("mix")) return str;
             return str.Remove(startI, endI - startI + 1);
         }
         public static string GetSimpleArtist(string fullTitle, string fullArtist)
         {
             if (fullTitle.Contains(" - ")) return fullTitle.Split(" - ", StringSplitOptions.RemoveEmptyEntries).First().Trim();
-            return fullArtist;
+            return fullArtist.Replace(" - Topic", "");
         }
     }
 }

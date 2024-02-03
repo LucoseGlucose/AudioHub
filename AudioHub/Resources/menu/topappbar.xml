@@ -4,38 +4,38 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<item
-        android:id="@+id/topappbar_addToPlaylist"
+        android:id="@+id/topappbar_regenTitles"
+        android:icon="@drawable/round_replay_24"
+        android:title="Regenerate Song Titles"
+        android:contentDescription="Regenerate Song Titles"
+        app:showAsAction="never"/>
+
+	<item
+        android:id="@+id/topappbar_download"
+        android:icon="@drawable/round_download_24"
+        android:title="Download"
+        android:contentDescription="Download"
+        app:showAsAction="always"/>
+
+	<item
+        android:id="@+id/topappbar_selectPlaylists"
         android:icon="@drawable/round_playlist_add_24"
         android:title="Add To Playlist"
         android:contentDescription="Add To Playlist"
-        app:showAsAction="never"/>
+        app:showAsAction="always"/>
 
 	<item
         android:id="@+id/topappbar_addToQueue"
         android:icon="@drawable/round_queue_24"
         android:title="Add To Queue"
         android:contentDescription="Add To Queue"
-        app:showAsAction="never"/>
+        app:showAsAction="always"/>
 
 	<item
         android:id="@+id/topappbar_readMessages"
         android:icon="@drawable/round_campaign_24"
         android:title="Read Meassages"
-        android:contentDescription="Read Meassages"
-        app:showAsAction="always"/>
-
-	<item
-        android:id="@+id/topappbar_keepScreenOn"
-        android:icon="@drawable/round_charging_station_24"
-        android:title="Keep Screen On"
-        android:contentDescription="Keep Screen On"
-        app:showAsAction="always"/>
-
-	<item
-        android:id="@+id/topappbar_speakCommand"
-        android:icon="@drawable/round_record_voice_over_24"
-        android:title="Speak Command"
-        android:contentDescription="Speak Command"
+        android:contentDescription="Read Messages"
         app:showAsAction="always"/>
 
 </menu>
