@@ -79,6 +79,7 @@
     <Compile Include="Song.cs" />
     <Compile Include="SongPlayer.cs" />
     <Compile Include="SongsFragment.cs" />
+    <Compile Include="TTSInitListener.cs" />
     <Compile Include="TTSProgressListener.cs" />
     <Compile Include="ViewAdapter.cs" />
   </ItemGroup>
