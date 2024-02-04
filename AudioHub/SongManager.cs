@@ -228,7 +228,7 @@ namespace AudioHub
         }
         public static Song GetSongById(string id)
         {
-            XmlReader reader = XmlReader.Create($"{SongDownloadDirectory}/{id}/SongData.xml", new XmlReaderSettings() { CloseInput = true });
+            XmlReader reader = XmlReader.Create($"{(IsSongDownloaded(id) ? SongDownloadDirectory : SongCacheDirectory)}/{id}/SongData.xml", new XmlReaderSettings() { CloseInput = true });
 
             XmlSerializer serializer = new XmlSerializer(typeof(Song));
             return (Song)serializer.Deserialize(reader);

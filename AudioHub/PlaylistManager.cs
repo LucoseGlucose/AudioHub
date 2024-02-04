@@ -19,6 +19,7 @@ namespace AudioHub
         public static string PlaylistDirectory => $"{MainActivity.activity.GetExternalFilesDir(null).AbsolutePath}/Playlists";
         public const string downloadedPlaylistName = "Downloaded";
         public const string queuePlaylistName = "Queue";
+        public const string tempPlaylistName = "Temporary";
 
         public static string[] GetPlaylistNames()
         {
@@ -63,6 +64,7 @@ namespace AudioHub
         public static string[] GetSongIDsInPlaylist(string title)
         {
             if (title == downloadedPlaylistName) return GetDownloadedSongsPlaylist().songs;
+            if (title == tempPlaylistName) return GetTemporarySongsPlaylist().songs;
             if (title == queuePlaylistName)
             {
                 string[] ids = new string[QueueManager.songs.Count];
@@ -90,6 +92,8 @@ namespace AudioHub
         {
             if (title == downloadedPlaylistName) return SongManager.GetSongsFromIDs(GetDownloadedSongsPlaylist().songs);
             if (title == queuePlaylistName) return QueueManager.songs.ToArray();
+            if (title == tempPlaylistName) return SongManager.GetSongsFromIDs(GetTemporarySongsPlaylist().songs);
+
             if (string.IsNullOrWhiteSpace(title)) return Array.Empty<Song>();
 
             string[] songIDs = GetSongIDsInPlaylist(title);
@@ -123,6 +127,19 @@ namespace AudioHub
             }
 
             return new Playlist(downloadedPlaylistName, songPaths);
+        }
+        public static Playlist GetTemporarySongsPlaylist()
+        {
+            string[] songPaths = Directory.EnumerateDirectories(SongManager.SongCacheDirectory)
+                .OrderBy(s => new DirectoryInfo(s).CreationTimeUtc.Ticks).ToArray();
+
+            for (int i = 0; i < songPaths.Length; i++)
+            {
+                DirectoryInfo info = new DirectoryInfo(songPaths[i]);
+                songPaths[i] = info.Name;
+            }
+
+            return new Playlist(tempPlaylistName, songPaths);
         }
         public static bool IsSongInPlaylist(string playlist, string songId)
         {

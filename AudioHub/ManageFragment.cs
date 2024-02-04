@@ -158,6 +158,11 @@ namespace AudioHub
                 fab.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_queue_24));
                 fab.Click += (s, e) => ShowViewPlaylistDialog(QueueManager.GetQueuePlaylist());
             }
+            else if (playlist.title == PlaylistManager.tempPlaylistName)
+            {
+                fab.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_delete_24));
+                fab.Click += (s, e) => ShowViewPlaylistDialog(PlaylistManager.GetTemporarySongsPlaylist());
+            }
             else fab.SetOnClickListener(new OnClickListener(v => ShowPlaylistDialog(playlist)));
         }
         private void ShowPlaylistDialog(Playlist playlist)
@@ -220,7 +225,8 @@ namespace AudioHub
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvArtist).Text = song.artist;
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
-            Drawable thumbnail = await Drawable.CreateFromPathAsync($"{SongManager.SongDownloadDirectory}/{song.id}/Thumbnail.jpg");
+            string dir = SongManager.IsSongDownloaded(song.id) ? SongManager.SongDownloadDirectory : SongManager.SongCacheDirectory;
+            Drawable thumbnail = await Drawable.CreateFromPathAsync($"{(dir)}/{song.id}/Thumbnail.jpg");
 
             holder.ItemView.FindViewById<ImageView>(Resource.Id.imgThumbnail)
                 .SetImageDrawable(thumbnail);
@@ -370,8 +376,8 @@ namespace AudioHub
         }
         private List<Playlist> GetAllPllaylists()
         {
-            List<Playlist> playlists = new List<Playlist>() {
-                PlaylistManager.GetDownloadedSongsPlaylist(), QueueManager.GetQueuePlaylist() };
+            List<Playlist> playlists = new List<Playlist>() { PlaylistManager.GetDownloadedSongsPlaylist(),
+                QueueManager.GetQueuePlaylist(), PlaylistManager.GetTemporarySongsPlaylist() };
             playlists.AddRange(PlaylistManager.GetPlaylists());
 
             return playlists;
