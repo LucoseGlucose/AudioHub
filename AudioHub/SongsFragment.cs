@@ -49,6 +49,7 @@ namespace AudioHub
             rv.SetLayoutManager(new LinearLayoutManager(view.Context));
 
             EditText etSearchBar = view.FindViewById<EditText>(Resource.Id.etSearchBar);
+            view.FindViewById<Button>(Resource.Id.btnGo).Click += (s, e) => SearchQuery(etSearchBar.Text, view, viewAdapter);
             etSearchBar.Text = SongManager.lastSearchQuery;
 
             etSearchBar.SetOnEditorActionListener(new OnEditorActionListener((tv, aID, e) =>
@@ -58,9 +59,6 @@ namespace AudioHub
                 SearchQuery(tv.Text, view, viewAdapter);
                 return true;
             }));
-
-            view.FindViewById<Button>(Resource.Id.btnGo).Click += (s, e) => 
-                SearchQuery(view.FindViewById<EditText>(Resource.Id.etSearchBar).Text, view, viewAdapter);
 
             selectPlaylistVA = new ViewAdapter<Playlist>(PlaylistManager.GetPlaylists(),
                 Resource.Layout.item_playlist_select, BindSelectPlaylistViewAdapter);

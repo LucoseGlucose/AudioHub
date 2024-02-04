@@ -14,6 +14,9 @@ using Google.Android.Material.FloatingActionButton;
 using Android.Graphics.Drawables;
 using AndroidX.ConstraintLayout.Widget;
 using System.IO;
+using Android.Views.InputMethods;
+using Google.Android.Material.Search;
+using YoutubeReExplode.Videos;
 
 namespace AudioHub
 {
@@ -46,8 +49,7 @@ namespace AudioHub
         {
             base.OnViewCreated(view, savedInstanceState);
 
-            Playlist[] playlists = PlaylistManager.GetPlaylists();
-            playlistVA = new ViewAdapter<Playlist>(playlists, Resource.Layout.item_playlist, BindPlaylistViewAdapter);
+            playlistVA = new ViewAdapter<Playlist>(Array.Empty<Playlist>(), Resource.Layout.item_playlist, BindPlaylistViewAdapter);
 
             RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvList);
             rv.SetAdapter(playlistVA);
@@ -55,56 +57,32 @@ namespace AudioHub
 
             view.FindViewById<Button>(Resource.Id.btnNewPlaylist).Click += (s, e) => ShowNewPlaylistDialog();
 
-            Playlist downloadedSongs = PlaylistManager.GetDownloadedSongsPlaylist();
-            View downloadedPlaylist = view.FindViewById<View>(Resource.Id.iDownloadedPlaylist);
-
-            downloadedPlaylist.FindViewById<TextView>(Resource.Id.tvTitle).Text = downloadedSongs.title;
-
-            songCountTexts.Add(downloadedPlaylist.FindViewById<TextView>(Resource.Id.tvCount));
-            songCountTexts.Last().Text = GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(downloadedSongs.title)?.Length);
-
-            FloatingActionButton fabDownloadedActions = downloadedPlaylist.FindViewById<FloatingActionButton>(Resource.Id.fabActions);
-            fabDownloadedActions.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_download_24));
-            fabDownloadedActions.Click += (s, e) => ShowViewPlaylistDialog(downloadedSongs);
-
-            View queuePlaylist = view.FindViewById<View>(Resource.Id.iQueuePlaylist);
-            queuePlaylist.FindViewById<TextView>(Resource.Id.tvTitle).Text = PlaylistManager.queuePlaylistName;
-
-            songCountTexts.Add(queuePlaylist.FindViewById<TextView>(Resource.Id.tvCount));
-            songCountTexts.Last().Text = GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(PlaylistManager.queuePlaylistName)?.Length);
-
-            FloatingActionButton fabQueueActions = queuePlaylist.FindViewById<FloatingActionButton>(Resource.Id.fabActions);
-            fabQueueActions.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_queue_24));
-            fabQueueActions.Click += (s, e) => ShowViewPlaylistDialog(QueueManager.GetQueuePlaylist());
-
             progressBar = view.FindViewById<ProgressBar>(Resource.Id.lpiProgress);
             downloadProgress = new Progress<double>(progress =>
                 progressBar.SetProgress((int)Math.Round(progress * 100), true));
 
             songVA = new ViewAdapter<Song>(Array.Empty<Song>(), Resource.Layout.item_song, BindSongViewAdapter);
-            selectPlaylistVA = new ViewAdapter<Playlist>(playlists, Resource.Layout.item_playlist_select, BindSelectPlaylistViewAdapter);
+            selectPlaylistVA = new ViewAdapter<Playlist>(Array.Empty<Playlist>(),
+                Resource.Layout.item_playlist_select, BindSelectPlaylistViewAdapter);
+
+            UpdatePlaylistList();
 
             EditText searchBar = view.FindViewById<EditText>(Resource.Id.etSearchBar);
+            view.FindViewById<Button>(Resource.Id.btnGo).Click += (s, e) => PlaylistSearchQuery(searchBar.Text, view);
+
             searchBar.AfterTextChanged += (s, e) =>
             {
-                List<char> chars = new List<char>();
-                foreach (char c in e.Editable)
-                {
-                    chars.Add(c);
-                }
-
-                string str = new string(chars.ToArray());
-                Playlist[] playlistList = PlaylistManager.GetPlaylists();
-
-                for (int i = 0; i < playlistList.Length; i++)
-                {
-                    if (playlistList[i].title.Contains(str, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        rv.ScrollToPosition(i);
-                        break;
-                    }
-                }
+                if (!e.Editable.Any()) UpdatePlaylistList();
             };
+
+            searchBar.SetOnEditorActionListener(new OnEditorActionListener((tv, aID, e) =>
+            {
+                if (aID != ImeAction.Go) return false;
+
+                PlaylistSearchQuery(tv.Text, view);
+                return true;
+            }));
+
         }
         public static string GetSongCountText(int? count)
         {
@@ -118,6 +96,49 @@ namespace AudioHub
             dialog.Dismiss();
             dialog.Dispose();
         }
+        private void PlaylistSearchQuery(string query, View view)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+
+            InputMethodManager imm = (InputMethodManager)view.Context.GetSystemService(Context.InputMethodService);
+            imm.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
+
+            List<Playlist> playlistList = GetAllPllaylists();
+            List<Playlist> matchingPlaylists = new List<Playlist>();
+
+            for (int i = 0; i < playlistList.Count; i++)
+            {
+                if (playlistList[i].title.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    matchingPlaylists.Add(playlistList[i]);
+                }
+            }
+
+            playlistVA.items = matchingPlaylists;
+            playlistVA.NotifyDataSetChanged();
+        }
+        private void SongSearchQuery(string query, View view)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+
+            InputMethodManager imm = (InputMethodManager)view.Context.GetSystemService(Context.InputMethodService);
+            imm.HideSoftInputFromWindow(view.WindowToken, HideSoftInputFlags.None);
+
+            Song[] songList = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title);
+            List<Song> matchingSongs = new List<Song>();
+
+            for (int i = 0; i < songList.Length; i++)
+            {
+                if (songList[i].title.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+                    || songList[i].artist.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    matchingSongs.Add(songList[i]);
+                }
+            }
+
+            songVA.items = matchingSongs;
+            songVA.NotifyDataSetChanged();
+        }
         private void BindPlaylistViewAdapter(RecyclerView.ViewHolder holder, Playlist playlist)
         {
             holder.ItemView.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
@@ -125,8 +146,19 @@ namespace AudioHub
             songCountTexts.Add(holder.ItemView.FindViewById<TextView>(Resource.Id.tvCount));
             songCountTexts.Last().Text = GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(playlist.title)?.Length);
 
-            holder.ItemView.FindViewById<FloatingActionButton>(Resource.Id.fabActions)
-                .SetOnClickListener(new OnClickListener(v => ShowPlaylistDialog(playlist)));
+            FloatingActionButton fab = holder.ItemView.FindViewById<FloatingActionButton>(Resource.Id.fabActions);
+
+            if (playlist.title == PlaylistManager.downloadedPlaylistName)
+            {
+                fab.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_download_24));
+                fab.Click += (s, e) => ShowViewPlaylistDialog(PlaylistManager.GetDownloadedSongsPlaylist());
+            }
+            else if (playlist.title == PlaylistManager.queuePlaylistName)
+            {
+                fab.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_queue_24));
+                fab.Click += (s, e) => ShowViewPlaylistDialog(QueueManager.GetQueuePlaylist());
+            }
+            else fab.SetOnClickListener(new OnClickListener(v => ShowPlaylistDialog(playlist)));
         }
         private void ShowPlaylistDialog(Playlist playlist)
         {
@@ -154,6 +186,22 @@ namespace AudioHub
             {
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => DismissDialog();
+
+                EditText searchBar = view.FindViewById<EditText>(Resource.Id.etSearchBar);
+                view.FindViewById<Button>(Resource.Id.btnGo).Click += (s, e) => SongSearchQuery(searchBar.Text, view);
+
+                searchBar.AfterTextChanged += (s, e) =>
+                {
+                    if (!e.Editable.Any()) UpdateSongList();
+                };
+
+                searchBar.SetOnEditorActionListener(new OnEditorActionListener((tv, aID, e) =>
+                {
+                    if (aID != ImeAction.Go) return false;
+
+                    SongSearchQuery(tv.Text, view);
+                    return true;
+                }));
 
                 songCountTexts.Add(view.FindViewById<TextView>(Resource.Id.tvCount));
                 songCountTexts.Last().Text = GetSongCountText(PlaylistManager.GetSongIDsInPlaylist(playlist.title)?.Length);
@@ -320,12 +368,20 @@ namespace AudioHub
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => DismissDialog();
             });
         }
+        private List<Playlist> GetAllPllaylists()
+        {
+            List<Playlist> playlists = new List<Playlist>() {
+                PlaylistManager.GetDownloadedSongsPlaylist(), QueueManager.GetQueuePlaylist() };
+            playlists.AddRange(PlaylistManager.GetPlaylists());
+
+            return playlists;
+        }
         private void UpdatePlaylistList()
         {
-            playlistVA.items = PlaylistManager.GetPlaylists();
+            playlistVA.items = GetAllPllaylists();
             playlistVA.NotifyDataSetChanged();
 
-            selectPlaylistVA.items = PlaylistManager.GetPlaylists();
+            selectPlaylistVA.items = playlistVA.items;
             selectPlaylistVA.NotifyDataSetChanged();
         }
         private void UpdateSongList()

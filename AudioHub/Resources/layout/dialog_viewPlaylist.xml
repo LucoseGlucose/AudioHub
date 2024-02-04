@@ -6,14 +6,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:id="@+id/btnGo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Go"
+        android:textSize="18sp"
+        android:layout_margin="15dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/rvList"/>
+
     <com.google.android.material.textfield.TextInputLayout
         style="?attr/textInputOutlinedDenseStyle"
         android:id="@+id/tilSearchBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
         android:hint="Search"
+        app:layout_constraintRight_toLeftOf="@id/btnGo"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:endIconMode="clear_text"
         app:startIconDrawable="@drawable/round_search_24">
 
@@ -22,7 +35,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
-            android:inputType="text"/>
+            android:inputType="text"
+            android:imeOptions="actionGo"
+            android:imeActionLabel="Search"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
