@@ -145,7 +145,7 @@ namespace AudioHub
                     if (!SongManager.IsSongDownloaded(song.id)) await SongManager.CacheSong(song.id, downloadProgress, default);
 
                     MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
-                    SongPlayer.Play(song, default);
+                    SongPlayer.Play(song, PlaylistManager.GetTemporarySongsPlaylist());
                 };
 
                 view.FindViewById<Button>(Resource.Id.btnAddToQueue).Click += async (s, e) =>

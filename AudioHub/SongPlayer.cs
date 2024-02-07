@@ -20,7 +20,7 @@ namespace AudioHub
         public static Song currentSong { get; private set; }
         public static Playlist currentPlaylist { get; private set; }
         public static List<Song> currentSongs { get; private set; }
-        public static int currentSongIndex { get; private set; }
+        public static int currentSongIndex { get; set; }
         public static MediaSession mediaSession { get; private set; }
 
         public static AudioFocusListener audioFocusListener;

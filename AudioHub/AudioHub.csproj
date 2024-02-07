@@ -117,9 +117,6 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_round.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SpotifyAPI.Web">
-      <Version>7.0.2</Version>
-    </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.6" />
     <PackageReference Include="Xamarin.AndroidX.Compose.Material.Icons.Extended">
       <Version>1.5.4.1</Version>

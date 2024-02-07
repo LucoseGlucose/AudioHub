@@ -387,7 +387,7 @@ namespace AudioHub
             playlistVA.items = GetAllPllaylists();
             playlistVA.NotifyDataSetChanged();
 
-            selectPlaylistVA.items = playlistVA.items;
+            selectPlaylistVA.items = PlaylistManager.GetPlaylists();
             selectPlaylistVA.NotifyDataSetChanged();
         }
         private void UpdateSongList()

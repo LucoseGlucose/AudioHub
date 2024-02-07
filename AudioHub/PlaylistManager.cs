@@ -11,6 +11,7 @@ using System.Text;
 using System.IO;
 using System.Xml.Serialization;
 using System.Xml;
+using Java.Lang;
 
 namespace AudioHub
 {
@@ -107,13 +108,39 @@ namespace AudioHub
         }
         public static void AddSongToPlaylist(string playlist, string songId)
         {
-            string dir = $"{PlaylistDirectory}/{playlist}";
-            if (Directory.Exists(dir)) File.Create($"{dir}/{songId}.song");
+            if (playlist == downloadedPlaylistName || playlist == queuePlaylistName || playlist == tempPlaylistName)
+            {
+                string dir = $"{PlaylistDirectory}/{playlist}";
+                if (Directory.Exists(dir)) File.Create($"{dir}/{songId}.song");
+            }
+
+            if (SongPlayer.currentPlaylist.title == playlist)
+            {
+                Song song = SongManager.GetSongById(songId);
+
+                if (SongPlayer.shuffle)
+                {
+                    SongPlayer.currentSongs.Insert(MainActivity.activity.shuffleSeed.Next(0, SongPlayer.currentSongs.Count), song);
+                    SongPlayer.currentSongIndex = SongPlayer.currentSongs.IndexOf(song);
+                }
+                else SongPlayer.currentSongs.Add(song);
+            }
         }
         public static void RemoveSongFromPlaylist(string playlist, string songId)
         {
-            string path = $"{PlaylistDirectory}/{playlist}/{songId}.song";
-            if (File.Exists(path)) File.Delete(path);
+            if (playlist == downloadedPlaylistName || playlist == queuePlaylistName || playlist == tempPlaylistName)
+            {
+                string path = $"{PlaylistDirectory}/{playlist}/{songId}.song";
+                if (File.Exists(path)) File.Delete(path);
+            }
+
+            if (SongPlayer.currentPlaylist.title == playlist)
+            {
+                Song song = SongManager.GetSongById(songId);
+
+                SongPlayer.currentSongs.Remove(song);
+                SongPlayer.currentSongIndex = SongPlayer.currentSongs.IndexOf(song);
+            }
         }
         public static Playlist GetDownloadedSongsPlaylist()
         {

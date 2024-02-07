@@ -91,6 +91,8 @@ namespace AudioHub
         }
         public static void ClearCachedSongs()
         {
+            lastSearchQuery = null;
+
             foreach (string dir in Directory.EnumerateDirectories(SongCacheDirectory))
             {
                 Directory.Delete(dir, true);
@@ -113,6 +115,7 @@ namespace AudioHub
 
             WriteSongData(directory, song);
 
+            PlaylistManager.AddSongToPlaylist(PlaylistManager.downloadedPlaylistName, song.id);
             return song;
         }
         public static async Task<Song> DownloadCachedSong(Song song, Progress<double> progress, CancellationToken cancellationToken)
@@ -130,6 +133,7 @@ namespace AudioHub
 
             WriteSongData(directory, song);
 
+            PlaylistManager.AddSongToPlaylist(PlaylistManager.downloadedPlaylistName, song.id);
             return song;
         }
         public static void WriteSongData(string directory, Song song)
@@ -214,6 +218,7 @@ namespace AudioHub
             XmlSerializer serializer = new XmlSerializer(typeof(Song));
             serializer.Serialize(writer, song);
 
+            PlaylistManager.AddSongToPlaylist(PlaylistManager.tempPlaylistName, song.id);
             return song;
         }
         public static void DeleteSong(string id)
@@ -225,6 +230,8 @@ namespace AudioHub
             {
                 PlaylistManager.RemoveSongFromPlaylist(playlist, id);
             }
+
+            PlaylistManager.RemoveSongFromPlaylist(PlaylistManager.downloadedPlaylistName, id);
         }
         public static Song GetSongById(string id)
         {
