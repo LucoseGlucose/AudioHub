@@ -117,12 +117,15 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_round.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.2" />
-    <PackageReference Include="Xamarin.AndroidX.Compose.Material.Icons.Extended">
-      <Version>1.4.3.1</Version>
+    <PackageReference Include="SpotifyAPI.Web">
+      <Version>7.0.2</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.9.0.1" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.7.6" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.6" />
+    <PackageReference Include="Xamarin.AndroidX.Compose.Material.Icons.Extended">
+      <Version>1.5.4.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.10.0.2" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.8.1" />
     <PackageReference Include="YoutubeReExplodeZ">
       <Version>7.0.6</Version>
     </PackageReference>

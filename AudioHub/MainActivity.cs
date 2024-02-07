@@ -65,7 +65,7 @@ namespace AudioHub
             SongManager.ClearCachedSongs();
 
             SongPlayer.Init();
-            MessageListener.readMessages = false;
+            MessageListener.readMessages = true;
         }
         protected override void OnDestroy()
         {

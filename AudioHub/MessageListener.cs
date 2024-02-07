@@ -49,27 +49,11 @@ namespace AudioHub
             prevTitle = title;
             prevText = text;
 
-            if (volumeShaper == null) volumeShaper = SongPlayer.mediaPlayer.CreateVolumeShaper(volumeConfig);
+            volumeShaper ??= SongPlayer.mediaPlayer.CreateVolumeShaper(volumeConfig);
             volumeShaper.Apply(VolumeShaper.Operation.Play);
 
             if (title != null) delayHandler.PostDelayed(() => tts.Speak(title, QueueMode.Add, paramsBundle, title), ttsDelayMillis);
-            if (text != null)
-            {
-                string[] lines = text.Split(Java.Lang.JavaSystem.GetProperty("line.separator"), StringSplitOptions.RemoveEmptyEntries);
-                
-                if (lines.Length < 2)
-                {
-                    delayHandler.PostDelayed(() => tts.Speak(text, QueueMode.Add, paramsBundle, text), ttsDelayMillis * 2);
-                }
-                else
-                {
-                    for (int i = 0; i < lines.Length; i++)
-                    {
-                        delayHandler.PostDelayed(() => tts.Speak(lines[i],
-                            QueueMode.Add, paramsBundle, lines[i]), ttsDelayMillis * (2 + i));
-                    }
-                }
-            }
+            if (text != null) delayHandler.PostDelayed(() => tts.Speak(text, QueueMode.Add, paramsBundle, text), ttsDelayMillis * 2);
         }
         private string ConvertToASCII(string str)
         {
