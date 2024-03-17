@@ -102,9 +102,15 @@ namespace AudioHub
             mediaSession.Active = true;
             onPlay?.Invoke(song, playlist);
         }
-        public static void Pause()
+        public static void Pause(bool user)
         {
             mediaPlayer.Pause();
+
+            if (user)
+            {
+                AudioManager am = MainActivity.activity.GetSystemService(Context.AudioService) as AudioManager;
+                am.AbandonAudioFocusRequest(audioFocusRequest);
+            }
 
             UpdatePlaybackState();
             onPause?.Invoke();
@@ -147,7 +153,9 @@ namespace AudioHub
         }
         public static void PlayNextSong()
         {
-            Play(GetNextSong(), currentPlaylist);
+            Song s = GetNextSong();
+            if (string.IsNullOrEmpty(s.id)) return;
+            Play(s, currentPlaylist);
         }
         public static void PlayPreviousSong()
         {
@@ -191,7 +199,7 @@ namespace AudioHub
         }
         public override void OnPause()
         {
-            Pause();
+            Pause(true);
         }
         public override void OnSeekTo(long pos)
         {
@@ -207,7 +215,7 @@ namespace AudioHub
         }
         public override void OnStop()
         {
-            Pause();
+            Pause(false);
         }
     }
 }

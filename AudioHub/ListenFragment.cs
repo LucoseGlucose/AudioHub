@@ -81,11 +81,15 @@ namespace AudioHub
 
             babTopAppBar = view.FindViewById<BottomAppBar>(Resource.Id.babTopAppBar);
             babTopAppBar.SetNavigationOnClickListener(new OnClickListener(v => MainActivity.activity.FinishAndRemoveTask()));
+
+            babTopAppBar.Menu.FindItem(Resource.Id.topappbar_readMessages).Icon.SetTint(Context.GetColor(MessageListener.readMessages ?
+                        Resource.Color.m3_sys_color_dark_primary : Resource.Color.m3_sys_color_dark_on_surface));
+
             babTopAppBar.MenuItemClick += async (s, e) =>
             {
                 if (e.Item.ItemId == Resource.Id.topappbar_regenTitles)
                 {
-                    SongPlayer.Pause();
+                    SongPlayer.Pause(false);
 
                     foreach (string songId in PlaylistManager.GetDownloadedSongsPlaylist().songs)
                     {
@@ -179,7 +183,7 @@ namespace AudioHub
 
             fabPlayPause.Click += (s, e) =>
             {
-                if (SongPlayer.mediaPlayer.IsPlaying) SongPlayer.Pause();
+                if (SongPlayer.mediaPlayer.IsPlaying) SongPlayer.Pause(true);
                 else SongPlayer.Resume();
             };
 
@@ -202,7 +206,7 @@ namespace AudioHub
         }
         private void TimerUpdate()
         {
-            if (SongPlayer.mediaPlayer == null) return;
+            if (SongPlayer.mediaPlayer == null || !SongPlayer.mediaPlayer.IsPlaying) return;
 
             int secs = (int)Math.Floor((float)SongPlayer.mediaPlayer.CurrentPosition / 1000);
             tvElapsedDuration.Text = Song.GetDurationString(secs);

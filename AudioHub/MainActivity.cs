@@ -24,7 +24,10 @@ using System;
 
 namespace AudioHub
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait)]
+    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true,
+        ScreenOrientation = ScreenOrientation.Portrait, LaunchMode = LaunchMode.SingleInstance)]
+    [IntentFilter(new[] { "android.intent.action.SEND" }, Categories = new[] { "android.intent.category.DEFAULT" },
+        DataMimeType = "text/*")]
     public class MainActivity : FragmentActivity
     {
         private readonly Dictionary<int, AndroidX.Fragment.App.Fragment> fragments = new Dictionary<int, AndroidX.Fragment.App.Fragment>
@@ -51,6 +54,7 @@ namespace AudioHub
             bNavView = FindViewById<BottomNavigationView>(Resource.Id.bnvNavigation);
             bNavView.ItemSelected += BNavView_ItemSelected;
 
+            MessageListener.readMessages = true;
             SwitchPage(Resource.Id.navigation_listen);
 
             await Permissions.RequestAsync<Permissions.StorageRead>();
@@ -64,12 +68,32 @@ namespace AudioHub
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
 
+            NotificationChannel nc = new NotificationChannel("Controls", "Controls", NotificationImportance.None);
+            nc.LockscreenVisibility = NotificationVisibility.Public;
+
+            NotificationManager nm = GetSystemService(NotificationService) as NotificationManager;
+            nm.CreateNotificationChannel(nc);
+
             SongPlayer.Init();
-            MessageListener.readMessages = true;
+            OnNewIntent(Intent);
+        }
+        protected override void OnNewIntent(Intent intent)
+        {
+            string link = intent.GetStringExtra(Intent.ExtraText);
+            if (string.IsNullOrEmpty(link)) return;
+
+            int id = Resource.Id.navigation_songs;
+            SongsFragment f = fragments[id] as SongsFragment;
+
+            SwitchPage(id);
+            f.SetLink(link);
         }
         protected override void OnDestroy()
         {
             base.OnDestroy();
+
+            AudioManager am = GetSystemService(AudioService) as AudioManager;
+            am.AbandonAudioFocusRequest(SongPlayer.audioFocusRequest);
 
             StopService(new Intent(this, typeof(NextSongService)));
 

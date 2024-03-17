@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static Android.Icu.Text.CaseMap;
 
 namespace AudioHub
 {
@@ -35,6 +36,9 @@ namespace AudioHub
         private VolumeShaper.Configuration volumeConfig;
         private VolumeShaper volumeShaper;
 
+        private string[] blacklistTitles = new[] { "Cable charging" };
+        private Queue<string> speakingQueue;
+
         public override void OnNotificationPosted(StatusBarNotification sbn)
         {
             if (!readMessages || SongPlayer.mediaPlayer == null || !SongPlayer.mediaPlayer.IsPlaying || sbn.Id == 2) return;
@@ -43,17 +47,34 @@ namespace AudioHub
             string title = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraTitle));
             string text = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraText));
 
-            if (title.Contains("Cable charging")) return;
+            if (blacklistTitles.Any(t => title.Contains(t))) return;
             if (title == prevTitle && text == prevText) return;
 
             prevTitle = title;
             prevText = text;
 
-            volumeShaper ??= SongPlayer.mediaPlayer.CreateVolumeShaper(volumeConfig);
-            volumeShaper.Apply(VolumeShaper.Operation.Play);
+            int prevCount = speakingQueue.Count;
 
-            if (title != null) delayHandler.PostDelayed(() => tts.Speak(title, QueueMode.Add, paramsBundle, title), ttsDelayMillis);
-            if (text != null) delayHandler.PostDelayed(() => tts.Speak(text, QueueMode.Add, paramsBundle, text), ttsDelayMillis * 2);
+            speakingQueue.Enqueue(title);
+            speakingQueue.Enqueue(text);
+
+            if (prevCount < 1)
+            {
+                volumeShaper ??= SongPlayer.mediaPlayer.CreateVolumeShaper(volumeConfig);
+                volumeShaper.Apply(VolumeShaper.Operation.Play);
+
+                CheckQueue();
+            }
+        }
+        private bool CheckQueue()
+        {
+            if (speakingQueue.TryPeek(out string message))
+            {
+                delayHandler.PostDelayed(() => tts.Speak(message, QueueMode.Add, paramsBundle, message), ttsDelayMillis);
+                return true;
+            }
+
+            return false;
         }
         private string ConvertToASCII(string str)
         {
@@ -84,10 +105,21 @@ namespace AudioHub
 
             tts.SetOnUtteranceProgressListener(new TTSProgressListener(id => 
             {
-                bool text = prevText != null && id == prevText;
-                bool title = prevTitle != null && prevText == null && id == prevTitle;
+                speakingQueue.Dequeue();
 
-                if (title || text) delayHandler.PostDelayed(() => volumeShaper.Apply(VolumeShaper.Operation.Reverse), ttsDelayMillis);
+                if (!CheckQueue())
+                {
+                    volumeShaper.Apply(VolumeShaper.Operation.Reverse);
+                    delayHandler.PostDelayed(() =>
+                    {
+                        if (speakingQueue.Count < 1)
+                        {
+                            volumeShaper.Dispose();
+                            volumeShaper = null;
+                        }
+                    },
+                    ttsDelayMillis);
+                }
             }));
         }
         public override void OnListenerDisconnected()

@@ -29,6 +29,7 @@ namespace AudioHub
         private ViewAdapter<Playlist> selectPlaylistVA;
 
         private List<Song> songs = new List<Song>();
+        private string link;
 
         public override void OnCreate(Bundle savedInstanceState)
         {
@@ -66,6 +67,22 @@ namespace AudioHub
             progressBar = view.FindViewById<ProgressBar>(Resource.Id.lpiProgress);
             downloadProgress = new Progress<double>(progress =>
                 progressBar.SetProgress((int)Math.Round(progress * 100), true));
+
+            SearchLink();
+        }
+        public void SetLink(string link)
+        {
+            this.link = link;
+            if (View != null) SearchLink();
+        }
+        private void SearchLink()
+        {
+            if (link == null) return;
+
+            View.FindViewById<EditText>(Resource.Id.etSearchBar).Text = link;
+            View.FindViewById<Button>(Resource.Id.btnGo).PerformClick();
+
+            link = null;
         }
         private async void SearchQuery(string query, View view, ViewAdapter<Song> viewAdapter)
         {
@@ -98,6 +115,8 @@ namespace AudioHub
 
                 viewAdapter.NotifyDataSetChanged();
             }
+
+            view.FindViewById<RecyclerView>(Resource.Id.rvList).ScrollToPosition(0);
         }
         private async void BindSongViewAdapter(RecyclerView.ViewHolder holder, Song song)
         {
@@ -113,6 +132,15 @@ namespace AudioHub
             holder.ItemView.FindViewById<FloatingActionButton>(Resource.Id.fabActions).SetOnClickListener(
                 new OnClickListener(v => ShowSongDialog(song, thumbnail)));
         }
+        private async Task DownloadSong(Android.App.Dialog dialog, Song song)
+        {
+            dialog.Dismiss();
+
+            progressBar.Indeterminate = false;
+            progressBar.SetProgress(0, true);
+
+            await SongManager.DownloadSong(song.id, downloadProgress, default);
+        }
         private void ShowSongDialog(Song song, Drawable thumbnail)
         {
             MainActivity.ShowDialog(Resource.Layout.dialog_songs_song, null, (dialog, view) =>
@@ -123,16 +151,18 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
                 Button btnDownload = view.FindViewById<Button>(Resource.Id.btnDownload);
+                Button btnDownloadAndPlay = view.FindViewById<Button>(Resource.Id.btnDownloadAndPlay);
+
                 if (!SongManager.IsSongDownloaded(song.id))
                 {
-                    btnDownload.Click += async (s, e) =>
+                    btnDownload.Click += async (s, e) => await DownloadSong(dialog, song);
+
+                    btnDownloadAndPlay.Click += async (s, e) =>
                     {
-                        dialog.Dismiss();
+                        await DownloadSong(dialog, song);
 
-                        progressBar.Indeterminate = false;
-                        progressBar.SetProgress(0, true);
-
-                        await SongManager.DownloadSong(song.id, downloadProgress, default);
+                        MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
+                        SongPlayer.Play(song, PlaylistManager.GetDownloadedSongsPlaylist());
                     };
                 }
                 else btnDownload.Visibility = ViewStates.Gone;
@@ -145,7 +175,9 @@ namespace AudioHub
                     if (!SongManager.IsSongDownloaded(song.id)) await SongManager.CacheSong(song.id, downloadProgress, default);
 
                     MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
-                    SongPlayer.Play(song, PlaylistManager.GetTemporarySongsPlaylist());
+
+                    SongPlayer.Play(song, SongManager.IsSongDownloaded(song.id) ?
+                        PlaylistManager.GetDownloadedSongsPlaylist() : PlaylistManager.GetTemporarySongsPlaylist());
                 };
 
                 view.FindViewById<Button>(Resource.Id.btnAddToQueue).Click += async (s, e) =>

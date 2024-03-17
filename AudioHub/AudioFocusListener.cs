@@ -18,7 +18,7 @@ namespace AudioHub
         {
             if (focusChange == AudioFocus.Loss || focusChange == AudioFocus.LossTransient)
             {
-                SongPlayer.Pause();
+                SongPlayer.Pause(false);
             }
             if (focusChange == AudioFocus.Gain || focusChange == AudioFocus.GainTransient)
             {

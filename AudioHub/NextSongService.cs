@@ -45,10 +45,13 @@ namespace AudioHub
                 .SetAction(Intent.ActionMediaButton).PutExtra(Intent.ExtraKeyEvent, "Next");
             PendingIntent nextPIntent = PendingIntent.GetBroadcast(this, 5, nextIntent, PendingIntentFlags.UpdateCurrent);
 
+            Intent reopenIntent = new Intent(this, typeof(MainActivity));
+            PendingIntent reopenPIntent = PendingIntent.GetActivity(this, 6, reopenIntent, PendingIntentFlags.UpdateCurrent);
+
             Notification.MediaStyle mediaStyle = new Notification.MediaStyle();
             mediaStyle.SetMediaSession(SongPlayer.mediaSession.SessionToken);
 
-            Notification.Builder builder = new Notification.Builder(this, "Running");
+            Notification.Builder builder = new Notification.Builder(this, "Controls");
             builder.SetSmallIcon(Resource.Drawable.round_headphones_24);
             builder.SetVisibility(NotificationVisibility.Public);
 
@@ -65,6 +68,7 @@ namespace AudioHub
 
             builder.AddAction(new Notification.Action(Resource.Drawable.round_skip_next_24, "next", nextPIntent));
 
+            builder.SetContentIntent(reopenPIntent);
             builder.SetStyle(mediaStyle);
             mediaStyle.SetShowActionsInCompactView(0, 1, 2);
 
