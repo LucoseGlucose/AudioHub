@@ -98,6 +98,16 @@
         app:iconPadding="1dp"/>
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDownloadAndPlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:text="Download And Play"
+        app:icon="@drawable/round_system_update_24"
+        app:iconGravity="textStart"
+        app:iconPadding="1dp"/>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDownload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -165,7 +165,11 @@ namespace AudioHub
                         SongPlayer.Play(song, PlaylistManager.GetDownloadedSongsPlaylist());
                     };
                 }
-                else btnDownload.Visibility = ViewStates.Gone;
+                else
+                {
+                    btnDownload.Visibility = ViewStates.Gone;
+                    btnDownloadAndPlay.Visibility = ViewStates.Gone;
+                }
 
                 view.FindViewById<Button>(Resource.Id.btnPlay).Click += async (s, e) =>
                 {

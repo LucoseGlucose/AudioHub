@@ -17,6 +17,7 @@ using System.IO;
 using Android.Views.InputMethods;
 using Google.Android.Material.Search;
 using YoutubeReExplode.Videos;
+using System.Threading.Tasks;
 
 namespace AudioHub
 {
@@ -234,6 +235,16 @@ namespace AudioHub
             holder.ItemView.FindViewById<FloatingActionButton>(Resource.Id.fabActions)
                 .SetOnClickListener(new OnClickListener(v => ShowSongDialog(song, thumbnail)));
         }
+        private async Task DownloadSong(Song song)
+        {
+            progressBar.Indeterminate = false;
+            progressBar.SetProgress(0, true);
+
+            await SongManager.DownloadSong(song.id, downloadProgress, default);
+            progressBar.SetProgress(100, true);
+
+            UpdateSongList();
+        }
         private void ShowSongDialog(Song song, Drawable thumbnail)
         {
             MainActivity.ShowDialog(Resource.Layout.dialog_manage_song, dialogStack, (dialog, view) =>
@@ -244,22 +255,35 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvDuration).Text = song.GetDurationString();
 
                 Button btnDownload = view.FindViewById<Button>(Resource.Id.btnDownload);
+                Button btnDownloadAndPlay = view.FindViewById<Button>(Resource.Id.btnDownloadAndPlay);
+
                 if (!SongManager.IsSongDownloaded(song.id))
                 {
                     btnDownload.Click += async (s, e) =>
                     {
                         DismissDialog();
+                        await DownloadSong(song);
+                    };
 
-                        progressBar.Indeterminate = false;
-                        progressBar.SetProgress(0, true);
+                    btnDownloadAndPlay.Click += async (s, e) =>
+                    {
+                        DismissDialog();
+                        await DownloadSong(song);
 
-                        await SongManager.DownloadSong(song.id, downloadProgress, default);
-                        progressBar.SetProgress(100, true);
+                        SongPlayer.Play(song, PlaylistManager.GetDownloadedSongsPlaylist());
 
-                        UpdateSongList();
+                        DismissDialog();
+                        DismissDialog();
+                        DismissDialog();
+
+                        MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
                     };
                 }
-                else btnDownload.Visibility = ViewStates.Gone;
+                else
+                {
+                    btnDownload.Visibility = ViewStates.Gone;
+                    btnDownloadAndPlay.Visibility = ViewStates.Gone;
+                }
 
                 Button btnRemoveFromQueue = view.FindViewById<Button>(Resource.Id.btnRemoveFromQueue);
 

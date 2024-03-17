@@ -223,8 +223,11 @@ namespace AudioHub
         }
         public static void DeleteSong(string id)
         {
-            string directory = $"{SongDownloadDirectory}/{id}";
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (SongPlayer.currentSong.id == id)
+            {
+                if (SongPlayer.currentSongs.Count > 1) SongPlayer.PlayNextSong();
+                else return;
+            }
 
             foreach (string playlist in PlaylistManager.GetPlaylistNames())
             {
@@ -232,6 +235,9 @@ namespace AudioHub
             }
 
             PlaylistManager.RemoveSongFromPlaylist(PlaylistManager.downloadedPlaylistName, id);
+
+            string directory = $"{SongDownloadDirectory}/{id}";
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
         public static Song GetSongById(string id)
         {
