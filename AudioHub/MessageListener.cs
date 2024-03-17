@@ -36,27 +36,28 @@ namespace AudioHub
         private VolumeShaper.Configuration volumeConfig;
         private VolumeShaper volumeShaper;
 
-        private string[] blacklistTitles = new[] { "Cable charging" };
-        private Queue<string> speakingQueue;
+        private string[] blacklistTitles = new string[] { "Cable charging" };
+        private string[] blacklistTexts = new string[] {  };
+        private Queue<string> speakingQueue = new Queue<string>();
 
         public override void OnNotificationPosted(StatusBarNotification sbn)
         {
-            if (!readMessages || SongPlayer.mediaPlayer == null || !SongPlayer.mediaPlayer.IsPlaying || sbn.Id == 2) return;
+            if (!readMessages || sbn.Id == 2 || SongPlayer.mediaPlayer == null || !SongPlayer.mediaPlayer.IsPlaying) return;
             Bundle extras = sbn.Notification.Extras;
 
             string title = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraTitle));
             string text = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraText));
 
-            if (blacklistTitles.Any(t => title.Contains(t))) return;
             if (title == prevTitle && text == prevText) return;
+            if (blacklistTitles.Any(t => title.Contains(t)) || blacklistTexts.Any(t => text.Contains(t))) return;
 
             prevTitle = title;
             prevText = text;
 
             int prevCount = speakingQueue.Count;
 
-            speakingQueue.Enqueue(title);
-            speakingQueue.Enqueue(text);
+            if (!string.IsNullOrEmpty(title)) speakingQueue.Enqueue(title);
+            if (!string.IsNullOrEmpty(text)) speakingQueue.Enqueue(text);
 
             if (prevCount < 1)
             {
