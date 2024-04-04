@@ -98,6 +98,16 @@
         app:iconPadding="1dp"/>
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDownload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:text="Download"
+        app:icon="@drawable/round_download_24"
+        app:iconGravity="textStart"
+        app:iconPadding="1dp"/>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDownloadAndPlay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -108,12 +118,22 @@
         app:iconPadding="1dp"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnDownload"
+        android:id="@+id/btnDownloadAndAddToQueue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="3dp"
-        android:text="Download"
-        app:icon="@drawable/round_download_24"
+        android:text="Download And Add To Queue"
+        app:icon="@drawable/round_add_to_queue_24"
+        app:iconGravity="textStart"
+        app:iconPadding="1dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnExport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp"
+        android:text="Export"
+        app:icon="@drawable/round_upload_file_24"
         app:iconGravity="textStart"
         app:iconPadding="1dp"/>
 

@@ -25,7 +25,7 @@ namespace AudioHub
         {
             if (!initialized)
             {
-                SongPlayer.mediaPlayer.Completion += (s, e) => SongPlayer.PlayNextSong();
+                SongPlayer.mediaPlayer.Completion += (s, e) => SongPlayer.PlayNextSong(false);
                 initialized = true;
             }
 

@@ -152,6 +152,7 @@ namespace AudioHub
 
                 Button btnDownload = view.FindViewById<Button>(Resource.Id.btnDownload);
                 Button btnDownloadAndPlay = view.FindViewById<Button>(Resource.Id.btnDownloadAndPlay);
+                Button btnDownloadAndAddToQueue = view.FindViewById<Button>(Resource.Id.btnDownloadAndAddToQueue);
 
                 if (!SongManager.IsSongDownloaded(song.id))
                 {
@@ -164,11 +165,18 @@ namespace AudioHub
                         MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
                         SongPlayer.Play(song, PlaylistManager.GetDownloadedSongsPlaylist());
                     };
+
+                    btnDownloadAndAddToQueue.Click += async (s, e) =>
+                    {
+                        await DownloadSong(dialog, song);
+                        QueueManager.songs.AddLast(song);
+                    };
                 }
                 else
                 {
                     btnDownload.Visibility = ViewStates.Gone;
                     btnDownloadAndPlay.Visibility = ViewStates.Gone;
+                    btnDownloadAndAddToQueue.Visibility = ViewStates.Gone;
                 }
 
                 view.FindViewById<Button>(Resource.Id.btnPlay).Click += async (s, e) =>
@@ -197,6 +205,12 @@ namespace AudioHub
                     ShowSelectPlaylistsDialog(song, thumbnail, dialog);
 
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => dialog.Dismiss();
+
+                view.FindViewById<Button>(Resource.Id.btnExport).Click += async (s, e) =>
+                {
+                    dialog.Dismiss();
+                    await SongManager.ExportSong(song.id, downloadProgress, default);
+                };
             });
         }
         private void ShowSelectPlaylistsDialog(Song song, Drawable thumbnail, Android.App.Dialog prevDialog)

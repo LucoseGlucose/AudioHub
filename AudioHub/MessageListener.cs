@@ -25,11 +25,14 @@ namespace AudioHub
     {
         public static bool readMessages;
 
-        private TextToSpeech tts;
+        public static TextToSpeech tts;
         private Bundle paramsBundle;
 
         private string prevTitle;
         private string prevText;
+
+        private int consecutiveNotifs;
+        private int maxConsecutiveNotifs = 1;
 
         private Handler delayHandler;
         private const long ttsDelayMillis = 500;
@@ -48,21 +51,43 @@ namespace AudioHub
             string title = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraTitle));
             string text = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraText));
 
-            if (title == prevTitle && text == prevText) return;
-            if (blacklistTitles.Any(t => title.Contains(t)) || blacklistTexts.Any(t => text.Contains(t))) return;
+            if (title == prevTitle)
+            {
+                if (text == prevText) return;
+
+                consecutiveNotifs++;
+                if (consecutiveNotifs > maxConsecutiveNotifs) return;
+            }
+            else
+            {
+                consecutiveNotifs = 0;
+            }
+
+            if ((title != null && blacklistTitles.Any(t => title.Contains(t)))
+                || (title != null && blacklistTexts.Any(t => text.Contains(t)))) return;
 
             prevTitle = title;
             prevText = text;
 
             int prevCount = speakingQueue.Count;
 
-            if (!string.IsNullOrEmpty(title)) speakingQueue.Enqueue(title);
+            if ((prevCount < 1 || consecutiveNotifs == 0) && !string.IsNullOrEmpty(title)) speakingQueue.Enqueue(title);
             if (!string.IsNullOrEmpty(text)) speakingQueue.Enqueue(text);
 
             if (prevCount < 1)
             {
                 volumeShaper ??= SongPlayer.mediaPlayer.CreateVolumeShaper(volumeConfig);
-                volumeShaper.Apply(VolumeShaper.Operation.Play);
+
+                try
+                {
+                    volumeShaper.Apply(VolumeShaper.Operation.Play);
+                }
+                catch
+                {
+                    volumeShaper.Dispose();
+                    volumeShaper = SongPlayer.mediaPlayer.CreateVolumeShaper(volumeConfig);
+                    volumeShaper.Apply(VolumeShaper.Operation.Play);
+                }
 
                 CheckQueue();
             }

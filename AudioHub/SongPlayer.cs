@@ -67,7 +67,11 @@ namespace AudioHub
         {
             if (string.IsNullOrWhiteSpace(song.id)) return;
 
-            currentSongs ??= PlaylistManager.GetSongsInPlaylist(playlist.title).ToList();
+            if (currentSongs == null)
+            {
+                currentSongs = PlaylistManager.GetSongsInPlaylist(playlist.title).ToList();
+                if (shuffle) ShuffleList(currentSongs);
+            }
             currentSongIndex = currentSongs.IndexOf(song);
 
             if (song.id != currentSong.id || playlist.title != currentPlaylist.title)
@@ -82,7 +86,7 @@ namespace AudioHub
             else mediaPlayer.Stop();
 
             ((AudioManager)MainActivity.activity.GetSystemService(Context.AudioService)).RequestAudioFocus(audioFocusRequest);
-
+            
             MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder();
             metadataBuilder.PutString(MediaMetadata.MetadataKeyTitle, song.title);
             metadataBuilder.PutString(MediaMetadata.MetadataKeyArtist, song.artist);
@@ -142,6 +146,7 @@ namespace AudioHub
         }
         public static void ShuffleList<T>(IList<T> list)
         {
+            if (list == null) return;
             int i = list.Count;
 
             while (i > 1)
@@ -151,8 +156,14 @@ namespace AudioHub
                 (list[i], list[random]) = (list[random], list[i]);
             }
         }
-        public static void PlayNextSong()
+        public static void PlayNextSong(bool user)
         {
+            if (user && MessageListener.tts.IsSpeaking)
+            {
+                MessageListener.tts.Stop();
+                return;
+            }
+
             Song s = GetNextSong();
             if (string.IsNullOrEmpty(s.id)) return;
             Play(s, currentPlaylist);
@@ -207,7 +218,7 @@ namespace AudioHub
         }
         public override void OnSkipToNext()
         {
-            PlayNextSong();
+            PlayNextSong(true);
         }
         public override void OnSkipToPrevious()
         {

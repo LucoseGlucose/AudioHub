@@ -35,5 +35,10 @@ namespace AudioHub
         {
 
         }
+
+        public override void OnStop(string utteranceId, bool interrupted)
+        {
+            doneAction(utteranceId);
+        }
     }
 }

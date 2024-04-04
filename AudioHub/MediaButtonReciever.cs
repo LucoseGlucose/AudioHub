@@ -22,7 +22,7 @@ namespace AudioHub
             if (action == "Previous") SongPlayer.PlayPreviousSong();
             if (action == "Resume") SongPlayer.Resume();
             if (action == "Pause") SongPlayer.Pause(true);
-            if (action == "Next") SongPlayer.PlayNextSong();
+            if (action == "Next") SongPlayer.PlayNextSong(true);
         }
     }
 }

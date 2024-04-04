@@ -187,7 +187,7 @@ namespace AudioHub
                 else SongPlayer.Resume();
             };
 
-            fabNext.Click += (s, e) => SongPlayer.PlayNextSong();
+            fabNext.Click += (s, e) => SongPlayer.PlayNextSong(true);
             fabPrev.Click += (s, e) => SongPlayer.PlayPreviousSong();
 
             fabLoop.Click += (s, e) =>

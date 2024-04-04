@@ -60,6 +60,8 @@ namespace AudioHub
             int endI = str.IndexOf(end);
 
             if (str.Substring(startI, endI - startI).ToLower().Contains("mix")) return str;
+            if (str[Math.Max(startI - 1, 0)] == ' ') startI--;
+
             return str.Remove(startI, endI - startI + 1);
         }
         public static string GetSimpleArtist(string fullTitle, string fullArtist)

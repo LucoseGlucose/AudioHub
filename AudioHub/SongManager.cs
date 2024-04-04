@@ -30,6 +30,7 @@ namespace AudioHub
         public static string SongDownloadDirectory => $"{MainActivity.activity.GetExternalFilesDir(null).AbsolutePath}/Songs";
         public static string ThumbnailCacheDirectory => $"{MainActivity.activity.GetExternalCacheDirs().First().AbsolutePath}/Thumbnails";
         public static string SongCacheDirectory => $"{MainActivity.activity.GetExternalCacheDirs().First().AbsolutePath}/Songs";
+        public static string SongExportDirectory => "/storage/emulated/0/Music/AudioHub";
         public static string lastSearchQuery;
 
         public static Song GetSongFromVideo(Video video)
@@ -68,8 +69,11 @@ namespace AudioHub
 
             List<Song> songs = new List<Song>();
 
-            IAsyncEnumerator<Batch<ISearchResult>> results = ytClient.Value.Search.
-                GetResultBatchesAsync(query, SearchFilter.Video, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            IAsyncEnumerator<Batch<ISearchResult>> results = TryGetResult(() => ytClient.Value.Search.
+                GetResultBatchesAsync(query, SearchFilter.Video, cancellationToken).GetAsyncEnumerator(cancellationToken),
+                () => null, out bool fail);
+
+            if (fail) return songs;
             await results.MoveNextAsync();
 
             foreach (ISearchResult result in results.Current.Items)
@@ -114,8 +118,11 @@ namespace AudioHub
             DownloadThumbnail(video, directory);
 
             WriteSongData(directory, song);
-
             PlaylistManager.AddSongToPlaylist(PlaylistManager.downloadedPlaylistName, song.id);
+
+            Toast.MakeText(MainActivity.activity.BaseContext,
+                $"{song.title} by {song.artist} has been downloaded", ToastLength.Long).Show();
+
             return song;
         }
         public static async Task<Song> DownloadCachedSong(Song song, Progress<double> progress, CancellationToken cancellationToken)
@@ -132,8 +139,11 @@ namespace AudioHub
             File.Copy($"{ThumbnailCacheDirectory}/{song.id}.jpg", $"{directory}/Thumbnail.jpg");
 
             WriteSongData(directory, song);
-
             PlaylistManager.AddSongToPlaylist(PlaylistManager.downloadedPlaylistName, song.id);
+
+            Toast.MakeText(MainActivity.activity.BaseContext,
+                $"{song.title} by {song.artist} has been downloaded", ToastLength.Long).Show();
+
             return song;
         }
         public static void WriteSongData(string directory, Song song)
@@ -219,13 +229,17 @@ namespace AudioHub
             serializer.Serialize(writer, song);
 
             PlaylistManager.AddSongToPlaylist(PlaylistManager.tempPlaylistName, song.id);
+
+            Toast.MakeText(MainActivity.activity.BaseContext,
+                $"{song.title} by {song.artist} has been cached", ToastLength.Long).Show();
+
             return song;
         }
         public static void DeleteSong(string id)
         {
             if (SongPlayer.currentSong.id == id)
             {
-                if (SongPlayer.currentSongs.Count > 1) SongPlayer.PlayNextSong();
+                if (SongPlayer.currentSongs.Count > 1) SongPlayer.PlayNextSong(false);
                 else return;
             }
 
@@ -236,8 +250,13 @@ namespace AudioHub
 
             PlaylistManager.RemoveSongFromPlaylist(PlaylistManager.downloadedPlaylistName, id);
 
+            Song song = GetSongById(id);
+
             string directory = $"{SongDownloadDirectory}/{id}";
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
+
+            Toast.MakeText(MainActivity.activity.BaseContext,
+                $"{song.title} by {song.artist} has been deleted", ToastLength.Long).Show();
         }
         public static Song GetSongById(string id)
         {
@@ -258,6 +277,37 @@ namespace AudioHub
                 songs[i] = GetSongById(ids[i]);
             }
             return songs;
+        }
+        public static T TryGetResult<T>(Func<T> f, Func<T> d, out bool fail)
+        {
+            try
+            {
+                fail = false;
+                return f();
+            }
+            catch (Exception e)
+            {
+                MainActivity.activity.UnhandledException(null, new UnhandledExceptionEventArgs(e, false));
+                fail = true;
+
+                return d();
+            }
+        }
+        public static async Task ExportSong(string videoId, Progress<double> progress, CancellationToken cancellationToken)
+        {
+            Video video = await ytClient.Value.Videos.GetAsync(VideoId.Parse(videoId), cancellationToken);
+            Song song = GetSongFromVideo(video);
+            string path = $"{SongExportDirectory}/{song.artist} - {song.title}.mp3";
+
+            if (File.Exists(path)) return;
+
+            StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
+            IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+            await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, path, progress, cancellationToken);
+
+            Toast.MakeText(MainActivity.activity.BaseContext,
+                $"{song.title} by {song.artist} has been exported", ToastLength.Long).Show();
         }
     }
 }

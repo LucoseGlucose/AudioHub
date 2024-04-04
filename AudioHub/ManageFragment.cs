@@ -193,6 +193,11 @@ namespace AudioHub
                 view.FindViewById<TextView>(Resource.Id.tvTitle).Text = playlist.title;
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => DismissDialog();
 
+                view.FindViewById<FloatingActionButton>(Resource.Id.fabGoToBottom).Click += (s, e) =>
+                {
+                    view.FindViewById<RecyclerView>(Resource.Id.rvPlaylistList).ScrollToPosition(songVA.ItemCount - 1);
+                };
+
                 EditText searchBar = view.FindViewById<EditText>(Resource.Id.etSearchBar);
                 view.FindViewById<Button>(Resource.Id.btnGo).Click += (s, e) => SongSearchQuery(searchBar.Text, view);
 
@@ -256,6 +261,7 @@ namespace AudioHub
 
                 Button btnDownload = view.FindViewById<Button>(Resource.Id.btnDownload);
                 Button btnDownloadAndPlay = view.FindViewById<Button>(Resource.Id.btnDownloadAndPlay);
+                Button btnDownloadAndAddToQueue = view.FindViewById<Button>(Resource.Id.btnDownloadAndAddToQueue);
 
                 if (!SongManager.IsSongDownloaded(song.id))
                 {
@@ -278,11 +284,18 @@ namespace AudioHub
 
                         MainActivity.activity.SwitchPage(Resource.Id.navigation_listen);
                     };
+
+                    btnDownloadAndAddToQueue.Click += async (s, e) =>
+                    {
+                        await DownloadSong(song);
+                        QueueManager.songs.AddLast(song);
+                    };
                 }
                 else
                 {
                     btnDownload.Visibility = ViewStates.Gone;
                     btnDownloadAndPlay.Visibility = ViewStates.Gone;
+                    btnDownloadAndAddToQueue.Visibility = ViewStates.Gone;
                 }
 
                 Button btnRemoveFromQueue = view.FindViewById<Button>(Resource.Id.btnRemoveFromQueue);
@@ -319,6 +332,12 @@ namespace AudioHub
 
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => DismissDialog();
                 view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) => ShowDeleteSongDialog(song, thumbnail);
+
+                view.FindViewById<Button>(Resource.Id.btnExport).Click += async (s, e) =>
+                {
+                    DismissDialog();
+                    await SongManager.ExportSong(song.id, downloadProgress, default);
+                };
             });
         }
         private void ShowDeleteSongDialog(Song song, Drawable thumbnail)

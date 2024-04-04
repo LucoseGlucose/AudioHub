@@ -64,6 +64,10 @@ namespace AudioHub
             VerifyDirectory(SongManager.SongCacheDirectory);
             VerifyDirectory(SongManager.ThumbnailCacheDirectory);
             VerifyDirectory(PlaylistManager.PlaylistDirectory);
+            VerifyDirectory($"storage/emulated/0/Documents/Debug");
+            VerifyDirectory(SongManager.SongExportDirectory);
+
+            AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
             SongManager.ClearCachedThumbnails();
             SongManager.ClearCachedSongs();
@@ -76,6 +80,23 @@ namespace AudioHub
 
             SongPlayer.Init();
             OnNewIntent(Intent);
+
+            ISharedPreferences prefs = GetSharedPreferences("AudioHub", FileCreationMode.Private);
+            string prevSongId = prefs.GetString("Song", "");
+            string prevPlaylistTitle = prefs.GetString("Playlist", "");
+
+            if (!string.IsNullOrEmpty(prevSongId) && !string.IsNullOrEmpty(prevPlaylistTitle))
+            {
+                SongPlayer.Play(SongManager.GetSongById(prevSongId), PlaylistManager.GetPlaylistByTitle(prevPlaylistTitle));
+                SongPlayer.Pause(true);
+            }
+        }
+        public void UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = e.ExceptionObject as Exception;
+            File.WriteAllText($"storage/emulated/0/Documents/Debug/Debug{DateTime.Now.Ticks}.txt", ex.Message + ex.StackTrace);
+
+            Toast.MakeText(BaseContext, ex.Message, ToastLength.Long).Show();
         }
         protected override void OnNewIntent(Intent intent)
         {
@@ -91,6 +112,9 @@ namespace AudioHub
         protected override void OnDestroy()
         {
             base.OnDestroy();
+
+            GetSharedPreferences("AudioHub", FileCreationMode.Private).Edit()
+                .PutString("Song", SongPlayer.currentSong.id).PutString("Playlist", SongPlayer.currentPlaylist.title).Commit();
 
             AudioManager am = GetSystemService(AudioService) as AudioManager;
             am.AbandonAudioFocusRequest(SongPlayer.audioFocusRequest);
