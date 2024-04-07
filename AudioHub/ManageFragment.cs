@@ -336,6 +336,9 @@ namespace AudioHub
                 view.FindViewById<Button>(Resource.Id.btnExport).Click += async (s, e) =>
                 {
                     DismissDialog();
+                    DismissDialog();
+                    DismissDialog();
+
                     await SongManager.ExportSong(song.id, downloadProgress, default);
                 };
             });

@@ -181,6 +181,18 @@ namespace AudioHub
                 songTimer.PostDelayed(TimerUpdate, 1000);
             };
 
+            SongPlayer.onToggleLoop += (loop) =>
+            {
+                fabLoop.SetImageDrawable(MainActivity.activity.GetDrawable(
+                    loop ? Resource.Drawable.round_replay_circle_filled_24 : Resource.Drawable.round_replay_24));
+            };
+
+            SongPlayer.onToggleShuffle += (shuffle) =>
+            {
+                fabShuffle.SetImageDrawable(MainActivity.activity.GetDrawable(
+                    shuffle ? Resource.Drawable.round_shuffle_on_24 : Resource.Drawable.round_shuffle_24));
+            };
+
             fabPlayPause.Click += (s, e) =>
             {
                 if (SongPlayer.mediaPlayer.IsPlaying) SongPlayer.Pause(true);
@@ -190,19 +202,8 @@ namespace AudioHub
             fabNext.Click += (s, e) => SongPlayer.PlayNextSong(true);
             fabPrev.Click += (s, e) => SongPlayer.PlayPreviousSong();
 
-            fabLoop.Click += (s, e) =>
-            {
-                SongPlayer.loop = !SongPlayer.loop;
-                fabLoop.SetImageDrawable(MainActivity.activity.GetDrawable(
-                    SongPlayer.loop ? Resource.Drawable.round_replay_circle_filled_24 : Resource.Drawable.round_replay_24));
-            };
-
-            fabShuffle.Click += (s, e) =>
-            {
-                SongPlayer.ToggleShuffle();
-                fabShuffle.SetImageDrawable(MainActivity.activity.GetDrawable(
-                    SongPlayer.shuffle ? Resource.Drawable.round_shuffle_on_24 : Resource.Drawable.round_shuffle_24));
-            };
+            fabLoop.Click += (s, e) => SongPlayer.ToggleLoop();
+            fabShuffle.Click += (s, e) => SongPlayer.ToggleShuffle();
         }
         private void TimerUpdate()
         {

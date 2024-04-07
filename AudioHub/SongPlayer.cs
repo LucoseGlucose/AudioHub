@@ -5,23 +5,26 @@ using Android.Media;
 using Android.Media.Session;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V4.Media.Session;
+using Android.Support.V4.Media;
 using Android.Views;
 using Android.Widget;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static Android.Support.V4.Media.Session.PlaybackStateCompat;
 
 namespace AudioHub
 {
-    public class SongPlayer : MediaSession.Callback
+    public class SongPlayer : MediaSessionCompat.Callback
     {
         public static MediaPlayer mediaPlayer { get; private set; }
         public static Song currentSong { get; private set; }
         public static Playlist currentPlaylist { get; private set; }
         public static List<Song> currentSongs { get; private set; }
         public static int currentSongIndex { get; set; }
-        public static MediaSession mediaSession { get; private set; }
+        public static MediaSessionCompat mediaSession { get; private set; }
 
         public static AudioFocusListener audioFocusListener;
         public static AudioFocusRequestClass audioFocusRequest;
@@ -33,6 +36,8 @@ namespace AudioHub
         public static event Action onResume;
         public static event Action onPause;
         public static event Action<int> onSeek;
+        public static event Action<bool> onToggleShuffle;
+        public static event Action<bool> onToggleLoop;
 
         public static void Init()
         {
@@ -51,9 +56,9 @@ namespace AudioHub
                 .SetAudioAttributes(new AudioAttributes.Builder().SetContentType(AudioContentType.Music).Build())
                 .SetOnAudioFocusChangeListener(audioFocusListener).Build();
 
-            mediaSession = new MediaSession(MainActivity.activity, "AudioHub");
+            mediaSession = new MediaSessionCompat(MainActivity.activity, "AudioHub");
             mediaSession.SetCallback(new SongPlayer());
-            mediaSession.SetFlags(MediaSessionFlags.HandlesMediaButtons | MediaSessionFlags.HandlesTransportControls);
+            mediaSession.SetFlags((int)MediaSessionFlags.HandlesMediaButtons | (int)MediaSessionFlags.HandlesTransportControls);
         }
         public static void Cleanup()
         {
@@ -87,7 +92,7 @@ namespace AudioHub
 
             ((AudioManager)MainActivity.activity.GetSystemService(Context.AudioService)).RequestAudioFocus(audioFocusRequest);
             
-            MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder();
+            MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
             metadataBuilder.PutString(MediaMetadata.MetadataKeyTitle, song.title);
             metadataBuilder.PutString(MediaMetadata.MetadataKeyArtist, song.artist);
             metadataBuilder.PutLong(MediaMetadata.MetadataKeyDuration, song.durationSecs * 1000);
@@ -143,6 +148,14 @@ namespace AudioHub
             else currentSongs = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title).ToList();
 
             currentSongIndex = currentSongs.IndexOf(currentSong);
+
+            onToggleShuffle?.Invoke(shuffle);
+            mediaSession.SetShuffleMode(Convert.ToInt32(shuffle));
+        }
+        public static void ToggleLoop()
+        {
+            loop = !loop;
+            onToggleLoop?.Invoke(loop);
         }
         public static void ShuffleList<T>(IList<T> list)
         {
@@ -189,13 +202,14 @@ namespace AudioHub
         }
         public static void UpdatePlaybackState()
         {
-            PlaybackState.Builder builder = new PlaybackState.Builder();
+            PlaybackStateCompat.Builder builder = new PlaybackStateCompat.Builder();
             PlaybackStateCode playbackState = mediaPlayer.IsPlaying ? PlaybackStateCode.Playing : PlaybackStateCode.Paused;
 
-            builder.SetState(playbackState, long.Parse(mediaPlayer.CurrentPosition.ToString()), 1f);
+            builder.SetState((int)playbackState, long.Parse(mediaPlayer.CurrentPosition.ToString()), 1f);
 
             long a = mediaPlayer.IsPlaying ? PlaybackState.ActionPause : PlaybackState.ActionPlay;
-            builder.SetActions(a | PlaybackState.ActionSeekTo | PlaybackState.ActionSkipToNext | PlaybackState.ActionSkipToPrevious);
+            builder.SetActions(a | PlaybackState.ActionSeekTo | PlaybackState.ActionSkipToNext | PlaybackState.ActionSkipToPrevious
+                | PlaybackStateCompat.ActionSetShuffleMode | PlaybackStateCompat.ActionSetRepeatMode);
 
             mediaSession.SetPlaybackState(builder.Build());
             MainActivity.UpdateService();
@@ -227,6 +241,20 @@ namespace AudioHub
         public override void OnStop()
         {
             Pause(false);
+        }
+        public override void OnSetShuffleMode(int shuffleMode)
+        {
+            if (shuffleMode > 1) mediaSession.SetShuffleMode(0);
+            if (shuffleMode == Convert.ToInt32(shuffle)) return;
+
+            ToggleShuffle();
+        }
+        public override void OnSetRepeatMode(int repeatMode)
+        {
+            if (repeatMode > 1) mediaSession.SetRepeatMode(0);
+            if (repeatMode == Convert.ToInt32(loop)) return;
+
+            ToggleLoop();
         }
     }
 }

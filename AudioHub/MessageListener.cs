@@ -39,7 +39,7 @@ namespace AudioHub
         private VolumeShaper.Configuration volumeConfig;
         private VolumeShaper volumeShaper;
 
-        private string[] blacklistTitles = new string[] { "Cable charging" };
+        private string[] blacklistTitles = new string[] { "Cable charging", "Me" };
         private string[] blacklistTexts = new string[] {  };
         private Queue<string> speakingQueue = new Queue<string>();
 
@@ -54,14 +54,9 @@ namespace AudioHub
             if (title == prevTitle)
             {
                 if (text == prevText) return;
-
                 consecutiveNotifs++;
-                if (consecutiveNotifs > maxConsecutiveNotifs) return;
             }
-            else
-            {
-                consecutiveNotifs = 0;
-            }
+            else consecutiveNotifs = 0;
 
             if ((title != null && blacklistTitles.Any(t => title.Contains(t)))
                 || (title != null && blacklistTexts.Any(t => text.Contains(t)))) return;
@@ -72,7 +67,7 @@ namespace AudioHub
             int prevCount = speakingQueue.Count;
 
             if ((prevCount < 1 || consecutiveNotifs == 0) && !string.IsNullOrEmpty(title)) speakingQueue.Enqueue(title);
-            if (!string.IsNullOrEmpty(text)) speakingQueue.Enqueue(text);
+            if (!string.IsNullOrEmpty(text) && consecutiveNotifs < maxConsecutiveNotifs) speakingQueue.Enqueue(text);
 
             if (prevCount < 1)
             {

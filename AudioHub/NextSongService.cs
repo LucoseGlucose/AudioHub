@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Android.Content.PM;
+using AndroidX.Core.App;
 
 namespace AudioHub
 {
@@ -48,25 +49,25 @@ namespace AudioHub
             Intent reopenIntent = new Intent(this, typeof(MainActivity));
             PendingIntent reopenPIntent = PendingIntent.GetActivity(this, 6, reopenIntent, PendingIntentFlags.UpdateCurrent);
 
-            Notification.MediaStyle mediaStyle = new Notification.MediaStyle();
+            AndroidX.Media.App.NotificationCompat.MediaStyle mediaStyle = new AndroidX.Media.App.NotificationCompat.MediaStyle();
             mediaStyle.SetMediaSession(SongPlayer.mediaSession.SessionToken);
 
-            Notification.Builder builder = new Notification.Builder(this, "Controls");
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "Controls");
             builder.SetSmallIcon(Resource.Drawable.round_headphones_24);
-            builder.SetVisibility(NotificationVisibility.Public);
+            builder.SetVisibility((int)NotificationVisibility.Public);
 
-            builder.AddAction(new Notification.Action(Resource.Drawable.round_skip_previous_24, "Previous", previousPIntent));
+            builder.AddAction(new NotificationCompat.Action(Resource.Drawable.round_skip_previous_24, "Previous", previousPIntent));
 
             if (SongPlayer.mediaPlayer.IsPlaying)
             {
-                builder.AddAction(new Notification.Action(Resource.Drawable.round_pause_24, "Pause", pausePIntent));
+                builder.AddAction(new NotificationCompat.Action(Resource.Drawable.round_pause_24, "Pause", pausePIntent));
             }
             else
             {
-                builder.AddAction(new Notification.Action(Resource.Drawable.round_play_arrow_24, "Resume", resumePIntent));
+                builder.AddAction(new NotificationCompat.Action(Resource.Drawable.round_play_arrow_24, "Resume", resumePIntent));
             }
 
-            builder.AddAction(new Notification.Action(Resource.Drawable.round_skip_next_24, "next", nextPIntent));
+            builder.AddAction(new NotificationCompat.Action(Resource.Drawable.round_skip_next_24, "next", nextPIntent));
 
             builder.SetContentIntent(reopenPIntent);
             builder.SetStyle(mediaStyle);
