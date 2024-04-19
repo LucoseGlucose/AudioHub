@@ -90,6 +90,8 @@ namespace AudioHub
                 SongPlayer.Play(SongManager.GetSongById(prevSongId), PlaylistManager.GetPlaylistByTitle(prevPlaylistTitle));
                 SongPlayer.Pause(true);
             }
+
+            if (prefs.GetBoolean("Shuffle", false)) SongPlayer.ToggleShuffle();
         }
         public void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -114,7 +116,9 @@ namespace AudioHub
             base.OnDestroy();
 
             GetSharedPreferences("AudioHub", FileCreationMode.Private).Edit()
-                .PutString("Song", SongPlayer.currentSong.id).PutString("Playlist", SongPlayer.currentPlaylist.title).Commit();
+                .PutString("Song", SongPlayer.currentSong.id)
+                .PutString("Playlist", SongPlayer.currentPlaylist.title)
+                .PutBoolean("Shuffle", SongPlayer.shuffle).Commit();
 
             AudioManager am = GetSystemService(AudioService) as AudioManager;
             am.AbandonAudioFocusRequest(SongPlayer.audioFocusRequest);
@@ -140,13 +144,20 @@ namespace AudioHub
         {
             if (currentPage == newPage || string.IsNullOrEmpty(Resources.GetResourceName(newPage))) return;
 
-            AndroidX.Fragment.App.FragmentTransaction ft = SupportFragmentManager.BeginTransaction();
-            ft.Replace(Resource.Id.flFragment, fragments[newPage]);
-            ft.SetTransition(AndroidX.Fragment.App.FragmentTransaction.TransitFragmentFade);
-            ft.Commit();
+            try
+            {
+                AndroidX.Fragment.App.FragmentTransaction ft = SupportFragmentManager.BeginTransaction();
+                ft.Replace(Resource.Id.flFragment, fragments[newPage]);
+                ft.SetTransition(AndroidX.Fragment.App.FragmentTransaction.TransitFragmentFade);
+                ft.Commit();
 
-            currentPage = newPage;
-            bNavView.SelectedItemId = newPage;
+                currentPage = newPage;
+                bNavView.SelectedItemId = newPage;
+            }
+            catch (Exception e)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(e, false));
+            }
         }
         public static void ShowDialog(int layoutResID, Stack<Dialog> stack, Action<Dialog, View> bindViewAction)
         {

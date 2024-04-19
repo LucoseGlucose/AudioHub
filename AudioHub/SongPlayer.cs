@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using static Android.Support.V4.Media.Session.PlaybackStateCompat;
 
 namespace AudioHub
 {
@@ -147,7 +146,7 @@ namespace AudioHub
             if (shuffle) ShuffleList(currentSongs);
             else currentSongs = PlaylistManager.GetSongsInPlaylist(currentPlaylist.title).ToList();
 
-            currentSongIndex = currentSongs.IndexOf(currentSong);
+            currentSongIndex = currentSongs?.IndexOf(currentSong) ?? 0;
 
             onToggleShuffle?.Invoke(shuffle);
             mediaSession.SetShuffleMode(Convert.ToInt32(shuffle));

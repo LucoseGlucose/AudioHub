@@ -301,13 +301,20 @@ namespace AudioHub
 
             if (File.Exists(path)) return;
 
-            StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
-            IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+            try
+            {
+                StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
+                IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-            await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, path, progress, cancellationToken);
+                await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, path, progress, cancellationToken);
 
-            Toast.MakeText(MainActivity.activity.BaseContext,
-                $"{song.title} by {song.artist} has been exported", ToastLength.Long).Show();
+                Toast.MakeText(MainActivity.activity.BaseContext,
+                    $"{song.title} by {song.artist} has been exported", ToastLength.Long).Show();
+            }
+            catch (Exception e)
+            {
+                MainActivity.activity.UnhandledException(ytClient, new UnhandledExceptionEventArgs(e, false));
+            }
         }
     }
 }

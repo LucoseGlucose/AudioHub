@@ -35,7 +35,7 @@ namespace AudioHub
         private int maxConsecutiveNotifs = 1;
 
         private Handler delayHandler;
-        private const long ttsDelayMillis = 500;
+        private const long ttsDelayMillis = 300;
         private VolumeShaper.Configuration volumeConfig;
         private VolumeShaper volumeShaper;
 
@@ -67,7 +67,8 @@ namespace AudioHub
             int prevCount = speakingQueue.Count;
 
             if ((prevCount < 1 || consecutiveNotifs == 0) && !string.IsNullOrEmpty(title)) speakingQueue.Enqueue(title);
-            if (!string.IsNullOrEmpty(text) && consecutiveNotifs < maxConsecutiveNotifs) speakingQueue.Enqueue(text);
+            if (!string.IsNullOrEmpty(text)
+                && (prevCount < 1 || consecutiveNotifs < maxConsecutiveNotifs)) speakingQueue.Enqueue(text);
 
             if (prevCount < 1)
             {
