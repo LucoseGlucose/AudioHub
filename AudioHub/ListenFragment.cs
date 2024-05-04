@@ -31,7 +31,7 @@ namespace AudioHub
         private FloatingActionButton fabLoop;
         private FloatingActionButton fabShuffle;
 
-        private Slider elapsedSlider;
+        private SeekBar elapsedSlider;
         private TextView tvElapsedDuration;
         private TextView tvFullDuration;
 
@@ -66,9 +66,14 @@ namespace AudioHub
             fabLoop = view.FindViewById<FloatingActionButton>(Resource.Id.fabLoop);
             fabShuffle = view.FindViewById<FloatingActionButton>(Resource.Id.fabShuffle);
 
-            elapsedSlider = view.FindViewById<Slider>(Resource.Id.sSongProgress);
-            elapsedSlider.SetLabelFormatter(new SongDurationFormatter());
-            lastSliderVal = elapsedSlider.Value;
+            elapsedSlider = view.FindViewById<SeekBar>(Resource.Id.sSongProgress);
+            elapsedSlider.Min = 0;
+
+            elapsedSlider.ProgressChanged += (s, e) =>
+            {
+                if (e.FromUser) SongPlayer.Seek(e.Progress);
+                tvElapsedDuration.Text = Song.GetDurationString(e.Progress);
+            };
 
             tvElapsedDuration = view.FindViewById<TextView>(Resource.Id.tvElapsedDuration);
             tvFullDuration = view.FindViewById<TextView>(Resource.Id.tvFullDuration);
@@ -157,6 +162,7 @@ namespace AudioHub
 
                 tvElapsedDuration.Text = Song.GetDurationString(0);
                 tvFullDuration.Text = Song.GetDurationString(song.durationSecs);
+                elapsedSlider.Max = song.durationSecs;
 
                 imgSongThumbnail.SetImageDrawable(await Drawable.CreateFromPathAsync(
                     SongManager.IsSongDownloaded(song.id) ? $"{SongManager.GetSongDirectory(song.id)}/Thumbnail.jpg"
@@ -210,18 +216,7 @@ namespace AudioHub
             if (SongPlayer.mediaPlayer == null || !SongPlayer.mediaPlayer.IsPlaying) return;
 
             int secs = (int)Math.Floor((float)SongPlayer.mediaPlayer.CurrentPosition / 1000);
-            tvElapsedDuration.Text = Song.GetDurationString(secs);
-
-            if (elapsedSlider.Value != lastSliderVal && lastSliderVal != 0f)
-            {
-                lastSliderVal = elapsedSlider.Value;
-                SongPlayer.Seek((int)Math.Floor(elapsedSlider.Value * SongPlayer.currentSong.durationSecs));
-            }
-            else
-            {
-                elapsedSlider.Value = (float)secs / SongPlayer.currentSong.durationSecs;
-                lastSliderVal = elapsedSlider.Value;
-            }
+            elapsedSlider.Progress = secs;
 
             songTimer.PostDelayed(TimerUpdate, 1000);
         }

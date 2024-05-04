@@ -83,7 +83,7 @@
         app:layout_constraintBottom_toBottomOf="@id/sSongProgress"
         app:layout_constraintTop_toTopOf="@id/sSongProgress"/>
 
-    <com.google.android.material.slider.Slider
+    <SeekBar
         android:id="@+id/sSongProgress"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

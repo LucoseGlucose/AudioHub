@@ -33,6 +33,8 @@ namespace AudioHub
 
         private int consecutiveNotifs;
         private int maxConsecutiveNotifs = 1;
+        private long lastPostTime;
+        private const long consecutivePostTime = 15000;
 
         private Handler delayHandler;
         private const long ttsDelayMillis = 300;
@@ -58,6 +60,11 @@ namespace AudioHub
             }
             else consecutiveNotifs = 0;
 
+            if (title.Contains("Canvas", StringComparison.CurrentCultureIgnoreCase))
+            {
+                throw new Exception($"{title} | {prevTitle} - {text} | {prevText} - {consecutiveNotifs}");
+            }
+
             if ((title != null && blacklistTitles.Any(t => title.Contains(t)))
                 || (title != null && blacklistTexts.Any(t => text.Contains(t)))) return;
 
@@ -65,8 +72,12 @@ namespace AudioHub
             prevText = text;
 
             int prevCount = speakingQueue.Count;
+            long prevPostTime = lastPostTime;
 
-            if ((prevCount < 1 || consecutiveNotifs == 0) && !string.IsNullOrEmpty(title)) speakingQueue.Enqueue(title);
+            lastPostTime = sbn.PostTime;
+
+            if (((prevCount < 1 || sbn.PostTime - prevPostTime > consecutivePostTime)
+                || consecutiveNotifs == 0) && !string.IsNullOrEmpty(title)) speakingQueue.Enqueue(title);
             if (!string.IsNullOrEmpty(text)
                 && (prevCount < 1 || consecutiveNotifs < maxConsecutiveNotifs)) speakingQueue.Enqueue(text);
 

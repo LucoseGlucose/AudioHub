@@ -149,7 +149,7 @@ namespace AudioHub
                 AndroidX.Fragment.App.FragmentTransaction ft = SupportFragmentManager.BeginTransaction();
                 ft.Replace(Resource.Id.flFragment, fragments[newPage]);
                 ft.SetTransition(AndroidX.Fragment.App.FragmentTransaction.TransitFragmentFade);
-                ft.Commit();
+                ft.CommitAllowingStateLoss();
 
                 currentPage = newPage;
                 bNavView.SelectedItemId = newPage;
