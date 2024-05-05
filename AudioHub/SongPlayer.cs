@@ -149,7 +149,7 @@ namespace AudioHub
             currentSongIndex = currentSongs?.IndexOf(currentSong) ?? 0;
 
             onToggleShuffle?.Invoke(shuffle);
-            mediaSession.SetShuffleMode(Convert.ToInt32(shuffle));
+            mediaSession.Controller.GetTransportControls().SetShuffleMode(Convert.ToInt32(shuffle));
         }
         public static void ToggleLoop()
         {
@@ -254,6 +254,10 @@ namespace AudioHub
             if (repeatMode == Convert.ToInt32(loop)) return;
 
             ToggleLoop();
+        }
+        public override bool OnMediaButtonEvent(Intent mediaButtonEvent)
+        {
+            return base.OnMediaButtonEvent(mediaButtonEvent);
         }
     }
 }
