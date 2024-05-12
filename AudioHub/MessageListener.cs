@@ -30,6 +30,7 @@ namespace AudioHub
 
         private string prevTitle;
         private string prevText;
+        private int prevId;
 
         private int consecutiveNotifs;
         private int maxConsecutiveNotifs = 1;
@@ -41,7 +42,7 @@ namespace AudioHub
         private VolumeShaper.Configuration volumeConfig;
         private VolumeShaper volumeShaper;
 
-        private string[] blacklistTitles = new string[] { "Cable charging", "Me" };
+        private string[] blacklistTitles = new string[] { "charging", "Me" };
         private string[] blacklistTexts = new string[] {  };
         private Queue<string> speakingQueue = new Queue<string>();
 
@@ -53,6 +54,8 @@ namespace AudioHub
             string title = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraTitle));
             string text = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraText));
 
+            if (sbn.Id == prevId) return;
+
             if (title == prevTitle)
             {
                 if (text == prevText) return;
@@ -60,16 +63,12 @@ namespace AudioHub
             }
             else consecutiveNotifs = 0;
 
-            if (title.Contains("Canvas", StringComparison.CurrentCultureIgnoreCase))
-            {
-                throw new Exception($"{title} | {prevTitle} - {text} | {prevText} - {consecutiveNotifs}");
-            }
-
             if ((title != null && blacklistTitles.Any(t => title.Contains(t)))
                 || (title != null && blacklistTexts.Any(t => text.Contains(t)))) return;
 
             prevTitle = title;
             prevText = text;
+            prevId = sbn.Id;
 
             int prevCount = speakingQueue.Count;
             long prevPostTime = lastPostTime;

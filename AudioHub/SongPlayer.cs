@@ -204,7 +204,7 @@ namespace AudioHub
             PlaybackStateCompat.Builder builder = new PlaybackStateCompat.Builder();
             PlaybackStateCode playbackState = mediaPlayer.IsPlaying ? PlaybackStateCode.Playing : PlaybackStateCode.Paused;
 
-            builder.SetState((int)playbackState, long.Parse(mediaPlayer.CurrentPosition.ToString()), 1f);
+            builder.SetState((int)playbackState, Convert.ToInt64(mediaPlayer.CurrentPosition), 1f);
 
             long a = mediaPlayer.IsPlaying ? PlaybackState.ActionPause : PlaybackState.ActionPlay;
             builder.SetActions(a | PlaybackState.ActionSeekTo | PlaybackState.ActionSkipToNext | PlaybackState.ActionSkipToPrevious

@@ -68,6 +68,7 @@ namespace AudioHub
 
             elapsedSlider = view.FindViewById<SeekBar>(Resource.Id.sSongProgress);
             elapsedSlider.Min = 0;
+            elapsedSlider.Max = SongPlayer.currentSong.durationSecs;
 
             elapsedSlider.ProgressChanged += (s, e) =>
             {
@@ -215,7 +216,7 @@ namespace AudioHub
         {
             if (SongPlayer.mediaPlayer == null || !SongPlayer.mediaPlayer.IsPlaying) return;
 
-            int secs = (int)Math.Floor((float)SongPlayer.mediaPlayer.CurrentPosition / 1000);
+            int secs = (int)Math.Floor(SongPlayer.mediaPlayer.CurrentPosition / 1000f);
             elapsedSlider.Progress = secs;
 
             songTimer.PostDelayed(TimerUpdate, 1000);
