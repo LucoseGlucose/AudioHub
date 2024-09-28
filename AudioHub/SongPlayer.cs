@@ -71,17 +71,18 @@ namespace AudioHub
         {
             if (string.IsNullOrWhiteSpace(song.id)) return;
 
-            if (currentSongs == null)
+            if (playlist.title != currentPlaylist.title)
             {
+                currentPlaylist = playlist;
+
                 currentSongs = PlaylistManager.GetSongsInPlaylist(playlist.title).ToList();
                 if (shuffle) ShuffleList(currentSongs);
             }
             currentSongIndex = currentSongs.IndexOf(song);
 
-            if (song.id != currentSong.id || playlist.title != currentPlaylist.title)
+            if (song.id != currentSong.id)
             {
                 currentSong = song;
-                currentPlaylist = playlist;
 
                 mediaPlayer.Reset();
                 mediaPlayer.SetDataSource(SongManager.IsSongDownloaded(song.id) ? $"{SongManager.GetSongDirectory(song.id)}/Audio.mp3"
@@ -189,7 +190,7 @@ namespace AudioHub
         }
         public static Song GetNextSong()
         {
-            if (currentSongs == null || currentSongs.Count == 1) return default;
+            if (currentSongs == null) return default;
 
             if (loop) return currentSong;
             if (!QueueManager.IsEmpty()) return QueueManager.GetNextSong();

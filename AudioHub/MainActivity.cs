@@ -16,11 +16,12 @@ using AndroidX.Core.App;
 using Android;
 using AndroidX.Activity;
 using Android.Bluetooth;
-using YoutubeReExplode.Videos;
-using YoutubeReExplode.Playlists;
+using YoutubeExplode.Videos;
+using YoutubeExplode.Playlists;
 using System.IO;
 using Android.Content.Res;
 using System;
+using System.Linq;
 
 namespace AudioHub
 {
@@ -87,6 +88,12 @@ namespace AudioHub
 
             if (!string.IsNullOrEmpty(prevSongId) && !string.IsNullOrEmpty(prevPlaylistTitle))
             {
+                if (!SongManager.IsSongDownloaded(prevSongId) || prevPlaylistTitle == PlaylistManager.tempPlaylistName)
+                {
+                    prevSongId = PlaylistManager.GetSongIDsInPlaylist(PlaylistManager.downloadedPlaylistName).FirstOrDefault();
+                    prevPlaylistTitle = PlaylistManager.downloadedPlaylistName;
+                }
+
                 SongPlayer.Play(SongManager.GetSongById(prevSongId), PlaylistManager.GetPlaylistByTitle(prevPlaylistTitle));
                 SongPlayer.Pause(true);
             }

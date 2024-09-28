@@ -108,7 +108,7 @@ namespace AudioHub
         }
         public static void AddSongToPlaylist(string playlist, string songId)
         {
-            if (playlist == downloadedPlaylistName || playlist == queuePlaylistName || playlist == tempPlaylistName)
+            if (playlist != downloadedPlaylistName || playlist != queuePlaylistName || playlist != tempPlaylistName)
             {
                 string dir = $"{PlaylistDirectory}/{playlist}";
                 if (Directory.Exists(dir)) File.Create($"{dir}/{songId}.song");
@@ -128,7 +128,7 @@ namespace AudioHub
         }
         public static void RemoveSongFromPlaylist(string playlist, string songId)
         {
-            if (playlist == downloadedPlaylistName || playlist == queuePlaylistName || playlist == tempPlaylistName)
+            if (playlist != downloadedPlaylistName || playlist != queuePlaylistName || playlist != tempPlaylistName)
             {
                 string path = $"{PlaylistDirectory}/{playlist}/{songId}.song";
                 if (File.Exists(path)) File.Delete(path);

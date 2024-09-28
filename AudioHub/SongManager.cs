@@ -9,15 +9,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using YoutubeReExplode;
-using YoutubeReExplode.Common;
-using YoutubeReExplode.Search;
-using YoutubeReExplode.Videos;
+using YoutubeExplode;
+using YoutubeExplode.Common;
+using YoutubeExplode.Search;
+using YoutubeExplode.Videos;
 using Java.Net;
 using System.IO;
 using System.Threading.Tasks;
-using YoutubeReExplode.Videos.Streams;
-using YoutubeReExplode.Channels;
+using YoutubeExplode.Videos.Streams;
+using YoutubeExplode.Channels;
 using System.Xml.Serialization;
 using System.Xml;
 
@@ -35,13 +35,11 @@ namespace AudioHub
 
         public static Song GetSongFromVideo(Video video)
         {
-            return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
-                (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
+            return new Song(video.Id, video.Title, video.Author.ChannelTitle, (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
         }
         public static Song GetSongFromVideo(VideoSearchResult video)
         {
-            return new Song(video.Id, video.Title, video.Author.ChannelName ?? video.Author.ChannelTitle,
-                (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
+            return new Song(video.Id, video.Title, video.Author.ChannelTitle, (int)Math.Ceiling(video.Duration.Value.TotalSeconds));
         }
         public static Song GetUpdatedSong(Song song)
         {
@@ -111,11 +109,14 @@ namespace AudioHub
             if (Directory.Exists(directory)) return song;
             Directory.CreateDirectory(directory);
 
-            StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
-            IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+            await Task.Run(async () =>
+            {
+                StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
+                IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-            await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
-            DownloadThumbnail(video, directory);
+                await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
+                DownloadThumbnail(video, directory);
+            });
 
             WriteSongData(directory, song);
             PlaylistManager.AddSongToPlaylist(PlaylistManager.downloadedPlaylistName, song.id);
@@ -132,11 +133,14 @@ namespace AudioHub
             if (Directory.Exists(directory)) return song;
             Directory.CreateDirectory(directory);
 
-            StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(song.id);
-            IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+            await Task.Run(async () =>
+            {
+                StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(song.id);
+                IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-            await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
-            File.Copy($"{ThumbnailCacheDirectory}/{song.id}.jpg", $"{directory}/Thumbnail.jpg");
+                await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
+                File.Copy($"{ThumbnailCacheDirectory}/{song.id}.jpg", $"{directory}/Thumbnail.jpg");
+            });
 
             WriteSongData(directory, song);
             PlaylistManager.AddSongToPlaylist(PlaylistManager.downloadedPlaylistName, song.id);
@@ -212,11 +216,14 @@ namespace AudioHub
             if (Directory.Exists(directory)) return song;
             Directory.CreateDirectory(directory);
 
-            StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
-            IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+            await Task.Run(async () =>
+            {
+                StreamManifest manifest = await ytClient.Value.Videos.Streams.GetManifestAsync(videoId);
+                IStreamInfo streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-            await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
-            DownloadThumbnail(video, directory);
+                await ytClient.Value.Videos.Streams.DownloadAsync(streamInfo, $"{directory}/Audio.mp3", progress, cancellationToken);
+                DownloadThumbnail(video, directory);
+            });
 
             XmlWriter writer = XmlWriter.Create($"{directory}/SongData.xml", new XmlWriterSettings()
             {
@@ -260,7 +267,10 @@ namespace AudioHub
         }
         public static Song GetSongById(string id)
         {
-            XmlReader reader = XmlReader.Create($"{(IsSongDownloaded(id) ? SongDownloadDirectory : SongCacheDirectory)}/{id}/SongData.xml", new XmlReaderSettings() { CloseInput = true });
+            string path = $"{(IsSongDownloaded(id) ? SongDownloadDirectory : SongCacheDirectory)}/{id}/SongData.xml";
+
+            if (!File.Exists(path)) return default;
+            XmlReader reader = XmlReader.Create(path, new XmlReaderSettings() { CloseInput = true });
 
             XmlSerializer serializer = new XmlSerializer(typeof(Song));
             return (Song)serializer.Deserialize(reader);

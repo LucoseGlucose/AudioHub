@@ -30,7 +30,6 @@ namespace AudioHub
 
         private string prevTitle;
         private string prevText;
-        private int prevId;
 
         private int consecutiveNotifs;
         private int maxConsecutiveNotifs = 1;
@@ -54,8 +53,6 @@ namespace AudioHub
             string title = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraTitle));
             string text = ConvertToASCIIIfNotAllEmojis(extras.GetString(Notification.ExtraText));
 
-            if (sbn.Id == prevId) return;
-
             if (title == prevTitle)
             {
                 if (text == prevText) return;
@@ -68,7 +65,6 @@ namespace AudioHub
 
             prevTitle = title;
             prevText = text;
-            prevId = sbn.Id;
 
             int prevCount = speakingQueue.Count;
             long prevPostTime = lastPostTime;

@@ -16,7 +16,7 @@ using AndroidX.ConstraintLayout.Widget;
 using System.IO;
 using Android.Views.InputMethods;
 using Google.Android.Material.Search;
-using YoutubeReExplode.Videos;
+using YoutubeExplode.Videos;
 using System.Threading.Tasks;
 
 namespace AudioHub
@@ -50,7 +50,7 @@ namespace AudioHub
         {
             base.OnViewCreated(view, savedInstanceState);
 
-            playlistVA = new ViewAdapter<Playlist>(Array.Empty<Playlist>(), Resource.Layout.item_playlist, BindPlaylistViewAdapter);
+            playlistVA ??= new ViewAdapter<Playlist>(Array.Empty<Playlist>(), Resource.Layout.item_playlist, BindPlaylistViewAdapter);
 
             RecyclerView rv = view.FindViewById<RecyclerView>(Resource.Id.rvList);
             rv.SetAdapter(playlistVA);
@@ -62,7 +62,7 @@ namespace AudioHub
             downloadProgress = new Progress<double>(progress =>
                 progressBar.SetProgress((int)Math.Round(progress * 100), true));
 
-            songVA = new ViewAdapter<Song>(Array.Empty<Song>(), Resource.Layout.item_song, BindSongViewAdapter);
+            songVA ??= new ViewAdapter<Song>(Array.Empty<Song>(), Resource.Layout.item_song, BindSongViewAdapter);
             selectPlaylistVA = new ViewAdapter<Playlist>(Array.Empty<Playlist>(),
                 Resource.Layout.item_playlist_select, BindSelectPlaylistViewAdapter);
 
@@ -152,17 +152,17 @@ namespace AudioHub
             if (playlist.title == PlaylistManager.downloadedPlaylistName)
             {
                 fab.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_download_24));
-                fab.Click += (s, e) => ShowViewPlaylistDialog(PlaylistManager.GetDownloadedSongsPlaylist());
+                fab.SetOnClickListener(new OnClickListener(_ => ShowViewPlaylistDialog(PlaylistManager.GetDownloadedSongsPlaylist())));
             }
             else if (playlist.title == PlaylistManager.queuePlaylistName)
             {
                 fab.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_queue_24));
-                fab.Click += (s, e) => ShowViewPlaylistDialog(QueueManager.GetQueuePlaylist());
+                fab.SetOnClickListener(new OnClickListener(_ => ShowViewPlaylistDialog(QueueManager.GetQueuePlaylist())));
             }
             else if (playlist.title == PlaylistManager.tempPlaylistName)
             {
                 fab.SetImageDrawable(Context.GetDrawable(Resource.Drawable.round_delete_24));
-                fab.Click += (s, e) => ShowViewPlaylistDialog(PlaylistManager.GetTemporarySongsPlaylist());
+                fab.SetOnClickListener(new OnClickListener(_ => ShowViewPlaylistDialog(PlaylistManager.GetTemporarySongsPlaylist())));
             }
             else fab.SetOnClickListener(new OnClickListener(v => ShowPlaylistDialog(playlist)));
         }
@@ -374,6 +374,8 @@ namespace AudioHub
                 view.FindViewById<Button>(Resource.Id.btnCancel).Click += (s, e) => DismissDialog();
                 view.FindViewById<Button>(Resource.Id.btnDelete).Click += (s, e) =>
                 {
+                    currentPlaylist = default;
+
                     PlaylistManager.DeletePlaylist(playlist.title);
                     songCountTexts.Clear();
 

@@ -13,11 +13,11 @@ using Google.Android.Material.FloatingActionButton;
 using Google.Android.Material.BottomAppBar;
 using Google.Android.Material.Slider;
 using Android.Graphics.Drawables;
-using YoutubeReExplode.Playlists;
+using YoutubeExplode.Playlists;
 using AndroidX.RecyclerView.Widget;
 using System.Threading;
-using YoutubeReExplode.Videos.Streams;
-using YoutubeReExplode.Videos;
+using YoutubeExplode.Videos.Streams;
+using YoutubeExplode.Videos;
 using System.IO;
 using Android.Graphics;
 
@@ -124,7 +124,7 @@ namespace AudioHub
                 }
                 if (e.Item.ItemId == Resource.Id.topappbar_download)
                 {
-                    await SongManager.DownloadCachedSong(SongPlayer.currentSong, downloadProgress, default);
+                    SongManager.DownloadCachedSong(SongPlayer.currentSong, downloadProgress, default);
                 }
             };
 
